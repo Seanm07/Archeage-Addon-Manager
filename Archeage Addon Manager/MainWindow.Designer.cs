@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
+            this.InstallButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
@@ -37,24 +37,24 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageAddonSourcesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.developersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uploadAddonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // InstallButton
             // 
-            this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button1.Location = new System.Drawing.Point(395, 330);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(109, 42);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Install Selected";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.InstallButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.InstallButton.Location = new System.Drawing.Point(395, 330);
+            this.InstallButton.Name = "InstallButton";
+            this.InstallButton.Size = new System.Drawing.Size(109, 42);
+            this.InstallButton.TabIndex = 0;
+            this.InstallButton.Text = "Install Selected";
+            this.InstallButton.UseVisualStyleBackColor = true;
+            this.InstallButton.Click += new System.EventHandler(this.InstallButtonClick);
             // 
             // panel1
             // 
@@ -127,21 +127,6 @@
             this.propertiesToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.propertiesToolStripMenuItem.Text = "Properties";
             // 
-            // helpToolStripMenuItem
-            // 
-            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.creditsToolStripMenuItem});
-            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.helpToolStripMenuItem.Text = "Help";
-            // 
-            // creditsToolStripMenuItem
-            // 
-            this.creditsToolStripMenuItem.Name = "creditsToolStripMenuItem";
-            this.creditsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.creditsToolStripMenuItem.Text = "About";
-            this.creditsToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutDialog);
-            // 
             // developersToolStripMenuItem
             // 
             this.developersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -155,6 +140,22 @@
             this.uploadAddonToolStripMenuItem.Name = "uploadAddonToolStripMenuItem";
             this.uploadAddonToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.uploadAddonToolStripMenuItem.Text = "Upload Addon";
+            this.uploadAddonToolStripMenuItem.Click += new System.EventHandler(this.UploadAddonButtonClick);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.creditsToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // creditsToolStripMenuItem
+            // 
+            this.creditsToolStripMenuItem.Name = "creditsToolStripMenuItem";
+            this.creditsToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.creditsToolStripMenuItem.Text = "About";
+            this.creditsToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutDialog);
             // 
             // MainWindow
             // 
@@ -162,7 +163,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 381);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.InstallButton);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -183,7 +184,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button InstallButton;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.MenuStrip menuStrip1;

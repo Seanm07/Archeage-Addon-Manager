@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
@@ -20,6 +22,20 @@ namespace Archeage_Addon_Manager {
             public Label descriptionLabel { get; set; }
         }
 
+        public class FolderInfo {
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public List<FileInfo> Files { get; set; } = new List<FileInfo>();
+            public List<FolderInfo> SubFolders { get; set; } = new List<FolderInfo>();
+        }
+
+        public class FileInfo {
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public long Size { get; set; }
+            public string Checksum { get; set; }
+        }
+
         List<AddonData> addons = new List<AddonData>();
         List<AddonWidget> addonWidgets = new List<AddonWidget>();
 
@@ -30,9 +46,7 @@ namespace Archeage_Addon_Manager {
 
         }
 
-        private void button1_Click(object sender, EventArgs e) {
-            
-
+        private void InstallButtonClick(object sender, EventArgs e) {
             for (int i = 0; i < addonWidgets.Count; i++) {
                 if (addonWidgets[i].checkbox.Checked) {
                     Console.WriteLine("Checked: " + addonWidgets[i].titleLabel.Text);
@@ -176,5 +190,67 @@ namespace Archeage_Addon_Manager {
         public void ShowAboutDialog(object sender, EventArgs e) {
             MessageBox.Show("Not endorsed by XLGames or Kakao Games, we don't reflect views or opinion of anyone officially involved in Archeage.\n\nKakao strongly does not recommend addon usage, you accept the potential game breaking risks!\n\nArcheage Addon Manager created by Nidoran\n\nBig thanks to Ingram for all his work and help to make this possible and his work on AAPatcher.\n\nAdditional thanks to Tamaki & Strawberry", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+        private string CalculateChecksum(string filePath) {
+            using (var md5 = MD5.Create()) {
+                using (var stream = File.OpenRead(filePath)) {
+                    byte[] hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                }
+            }
+        }
+
+        private long GetFileSize(string filePath) {
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read)) {
+                return stream.Length;
+            }
+        }
+
+        private FileInfo GetFileInfo(string filePath) {
+            return new FileInfo {
+                Name = Path.GetFileName(filePath),
+                Path = filePath,
+                Size = GetFileSize(filePath),
+                Checksum = CalculateChecksum(filePath)
+            };
+        }
+
+        private FolderInfo GetFolderInfo(string folderPath) {
+            var folderInfo = new FolderInfo {
+                Name = Path.GetFileName(folderPath),
+                Path = folderPath,
+                Files = new List<FileInfo>()
+            };
+
+            foreach (var filePath in Directory.GetFiles(folderPath)) {
+                var fileInfo = GetFileInfo(filePath);
+                folderInfo.Files.Add(fileInfo);
+            }
+
+            foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
+                var subFolderInfo = GetFolderInfo(subFolderPath);
+                folderInfo.SubFolders.Add(subFolderInfo);
+            }
+
+            return folderInfo;
+        }
+
+        private string CreateJsonForFolder(string folderPath) {
+            var folderInfo = GetFolderInfo(folderPath);
+            return JsonConvert.SerializeObject(folderInfo, Formatting.Indented);
+        }
+
+        private void UploadAddonButtonClick(object sender, EventArgs e) {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.Description = "Select root directory of addon source";
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
+                string selectedFolder = folderBrowserDialog.SelectedPath;
+                string jsonOutput = CreateJsonForFolder(selectedFolder);
+
+                MessageBox.Show(jsonOutput);
+            }
+        }
+
     }
 }
