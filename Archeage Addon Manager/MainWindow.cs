@@ -23,17 +23,17 @@ namespace Archeage_Addon_Manager {
         }
 
         public class FolderInfo {
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public List<FileInfo> Files { get; set; } = new List<FileInfo>();
-            public List<FolderInfo> SubFolders { get; set; } = new List<FolderInfo>();
+            public string foldername { get; set; }
+            public string folderpath { get; set; }
+            public List<FileInfo> files { get; set; } = new List<FileInfo>();
+            public List<FolderInfo> subFolders { get; set; } = new List<FolderInfo>();
         }
 
         public class FileInfo {
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public long Size { get; set; }
-            public string Checksum { get; set; }
+            public string filename { get; set; }
+            public string filepath { get; set; }
+            public long filesize { get; set; }
+            public string checksum { get; set; }
         }
 
         List<AddonData> addons = new List<AddonData>();
@@ -208,28 +208,28 @@ namespace Archeage_Addon_Manager {
 
         private FileInfo GetFileInfo(string filePath) {
             return new FileInfo {
-                Name = Path.GetFileName(filePath),
-                Path = filePath,
-                Size = GetFileSize(filePath),
-                Checksum = CalculateChecksum(filePath)
+                filename = Path.GetFileName(filePath),
+                filepath = filePath,
+                filesize = GetFileSize(filePath),
+                checksum = CalculateChecksum(filePath)
             };
         }
 
         private FolderInfo GetFolderInfo(string folderPath) {
             var folderInfo = new FolderInfo {
-                Name = Path.GetFileName(folderPath),
-                Path = folderPath,
-                Files = new List<FileInfo>()
+                foldername = Path.GetFileName(folderPath),
+                folderpath = folderPath,
+                files = new List<FileInfo>()
             };
 
             foreach (var filePath in Directory.GetFiles(folderPath)) {
                 var fileInfo = GetFileInfo(filePath);
-                folderInfo.Files.Add(fileInfo);
+                folderInfo.files.Add(fileInfo);
             }
 
             foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
                 var subFolderInfo = GetFolderInfo(subFolderPath);
-                folderInfo.SubFolders.Add(subFolderInfo);
+                folderInfo.subFolders.Add(subFolderInfo);
             }
 
             return folderInfo;
