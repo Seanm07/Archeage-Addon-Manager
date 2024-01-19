@@ -1,49 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Security.Cryptography;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
-        public class AddonData {
-            public string name { get; set; }
-            public string description { get; set; }
-            public string author { get; set; }
-            public float version { get; set; }
-            public string dataPath { get; set; }
-        }
+        public static MainWindow instance;
 
-        public class AddonWidget {
+        public class AddonWidget
+        {
             public CheckBox checkbox { get; set; }
             public Label titleLabel { get; set; }
             public Label descriptionLabel { get; set; }
         }
 
-        public class FolderInfo {
-            public string foldername { get; set; }
-            public string folderpath { get; set; }
-            public List<FileInfo> files { get; set; } = new List<FileInfo>();
-            public List<FolderInfo> subFolders { get; set; } = new List<FolderInfo>();
-        }
-
-        public class FileInfo {
-            public string filename { get; set; }
-            public string filepath { get; set; }
-            public long filesize { get; set; }
-            public string checksum { get; set; }
-        }
-
-        List<AddonData> addons = new List<AddonData>();
         List<AddonWidget> addonWidgets = new List<AddonWidget>();
 
         public MainWindow() {
+            instance = instance ?? this;
+
             InitializeComponent();
 
-            AddAddonsFromURL("https://www.spacemeat.space/aamods/data.json");
-
+            AddonDataManager.instance.LoadAddonsFromDataSources();
         }
 
         private void InstallButtonClick(object sender, EventArgs e) {
@@ -72,11 +50,8 @@ namespace Archeage_Addon_Manager {
             label1.Text = totalChecked + " addon" + (totalChecked > 1 ? "s" : "") + " selected";
         }
 
-        public void AddAddon(AddonData addonData) {
-            // Store the addon data in a list for later referencing
-            addons.Add(addonData);
-
-            // Visually display the addon in the addon list panel
+        // Visually display a widget for an addon in the addon list panel
+        public void AddAddonWidget(AddonDataManager.AddonData addonData) {
             // Create a horizontal group to contain each addon
             FlowLayoutPanel horizontalGroup = new FlowLayoutPanel() {
                 Dock = DockStyle.Top,
@@ -154,6 +129,7 @@ namespace Archeage_Addon_Manager {
 
             int curId = addonWidgets.Count;
 
+            // Register click events on all controls so clicking anything checks/unchecks the checkbox
             horizontalGroup.Click += (sender, e) => OnClickAddonWidget(curId);
             checkboxGroup.Click += (sender, e) => OnClickAddonWidget(curId);
             addonCheckbox.Click += (sender, e) => OnClickAddonWidget(curId);
@@ -169,75 +145,8 @@ namespace Archeage_Addon_Manager {
             });
         }
 
-        // Load addons from a URL containing a JSON array of AddonData objects
-        public void AddAddonsFromURL(string url) {
-            // Send a web request to the specified URL which should return a JSON array of AddonData objects
-            string jsonInput = new System.Net.WebClient().DownloadString(url);
-
-            try {
-                // Deserialize the JSON array into a list of AddonData objects
-                List<AddonData> addonList = JsonConvert.DeserializeObject<List<AddonData>>(jsonInput);
-
-                // Iterate through each addon and call AddAddon
-                foreach (AddonData addon in addonList) {
-                    AddAddon(addon);
-                }
-            } catch (Exception e) {
-                Console.WriteLine("Error parsing JSON result from URL " + url + " - " + e.Message);
-            }
-        }
-
         public void ShowAboutDialog(object sender, EventArgs e) {
             MessageBox.Show("Not endorsed by XLGames or Kakao Games, we don't reflect views or opinion of anyone officially involved in Archeage.\n\nKakao strongly does not recommend addon usage, you accept the potential game breaking risks!\n\nArcheage Addon Manager created by Nidoran\n\nBig thanks to Ingram for all his work and help to make this possible and his work on AAPatcher.\n\nAdditional thanks to Tamaki & Strawberry", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private string CalculateChecksum(string filePath) {
-            using (var md5 = MD5.Create()) {
-                using (var stream = File.OpenRead(filePath)) {
-                    byte[] hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
-                }
-            }
-        }
-
-        private long GetFileSize(string filePath) {
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read)) {
-                return stream.Length;
-            }
-        }
-
-        private FileInfo GetFileInfo(string filePath) {
-            return new FileInfo {
-                filename = Path.GetFileName(filePath),
-                filepath = filePath,
-                filesize = GetFileSize(filePath),
-                checksum = CalculateChecksum(filePath)
-            };
-        }
-
-        private FolderInfo GetFolderInfo(string folderPath) {
-            var folderInfo = new FolderInfo {
-                foldername = Path.GetFileName(folderPath),
-                folderpath = folderPath,
-                files = new List<FileInfo>()
-            };
-
-            foreach (var filePath in Directory.GetFiles(folderPath)) {
-                var fileInfo = GetFileInfo(filePath);
-                folderInfo.files.Add(fileInfo);
-            }
-
-            foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
-                var subFolderInfo = GetFolderInfo(subFolderPath);
-                folderInfo.subFolders.Add(subFolderInfo);
-            }
-
-            return folderInfo;
-        }
-
-        private string CreateJsonForFolder(string folderPath) {
-            var folderInfo = GetFolderInfo(folderPath);
-            return JsonConvert.SerializeObject(folderInfo, Formatting.Indented);
         }
 
         private void UploadAddonButtonClick(object sender, EventArgs e) {
@@ -246,7 +155,7 @@ namespace Archeage_Addon_Manager {
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
-                string jsonOutput = CreateJsonForFolder(selectedFolder);
+                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(selectedFolder);
 
                 MessageBox.Show(jsonOutput);
             }

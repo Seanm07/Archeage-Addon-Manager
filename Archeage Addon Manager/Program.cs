@@ -16,7 +16,11 @@ namespace Archeage_Addon_Manager
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainWindow());
+
+            // Initialise our AddonDataManager
+            new AddonDataManager();
+
+            Application.Run(new MainWindow());            
         }
     }
 }
