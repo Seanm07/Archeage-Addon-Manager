@@ -21,7 +21,12 @@ namespace Archeage_Addon_Manager {
 
             InitializeComponent();
 
+            // Load addons from data sources
             AddonDataManager.instance.LoadAddonsFromDataSources();
+
+            // Find archeage installation directories
+            installationPathComboBox.Items.AddRange(AddonDataManager.instance.FindInstallationPaths());
+            installationPathComboBox.SelectedIndex = 0;
         }
 
         private void InstallButtonClick(object sender, EventArgs e) {
@@ -160,6 +165,5 @@ namespace Archeage_Addon_Manager {
                 MessageBox.Show(jsonOutput);
             }
         }
-
     }
 }

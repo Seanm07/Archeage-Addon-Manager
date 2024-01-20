@@ -41,6 +41,7 @@
             this.uploadAddonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.installationPathComboBox = new System.Windows.Forms.ComboBox();
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -48,9 +49,9 @@
             // InstallButton
             // 
             this.InstallButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.InstallButton.Location = new System.Drawing.Point(395, 330);
+            this.InstallButton.Location = new System.Drawing.Point(393, 9);
             this.InstallButton.Name = "InstallButton";
-            this.InstallButton.Size = new System.Drawing.Size(109, 42);
+            this.InstallButton.Size = new System.Drawing.Size(109, 43);
             this.InstallButton.TabIndex = 0;
             this.InstallButton.Text = "Install Selected";
             this.InstallButton.UseVisualStyleBackColor = true;
@@ -70,6 +71,8 @@
             // 
             this.panel2.BackColor = System.Drawing.SystemColors.Window;
             this.panel2.Controls.Add(this.label1);
+            this.panel2.Controls.Add(this.installationPathComboBox);
+            this.panel2.Controls.Add(this.InstallButton);
             this.panel2.Controls.Add(this.progressBar1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 318);
@@ -81,7 +84,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 14);
+            this.label1.Location = new System.Drawing.Point(12, 12);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(94, 13);
             this.label1.TabIndex = 1;
@@ -89,9 +92,9 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 38);
+            this.progressBar1.Location = new System.Drawing.Point(12, 42);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(377, 13);
+            this.progressBar1.Size = new System.Drawing.Size(375, 10);
             this.progressBar1.TabIndex = 0;
             // 
             // menuStrip1
@@ -138,7 +141,7 @@
             // uploadAddonToolStripMenuItem
             // 
             this.uploadAddonToolStripMenuItem.Name = "uploadAddonToolStripMenuItem";
-            this.uploadAddonToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.uploadAddonToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.uploadAddonToolStripMenuItem.Text = "Upload Addon";
             this.uploadAddonToolStripMenuItem.Click += new System.EventHandler(this.UploadAddonButtonClick);
             // 
@@ -157,13 +160,21 @@
             this.creditsToolStripMenuItem.Text = "About";
             this.creditsToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutDialog);
             // 
+            // installationPathComboBox
+            // 
+            this.installationPathComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.installationPathComboBox.FormattingEnabled = true;
+            this.installationPathComboBox.Location = new System.Drawing.Point(190, 9);
+            this.installationPathComboBox.Name = "installationPathComboBox";
+            this.installationPathComboBox.Size = new System.Drawing.Size(197, 21);
+            this.installationPathComboBox.TabIndex = 2;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 381);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.InstallButton);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -197,6 +208,7 @@
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ToolStripMenuItem developersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem uploadAddonToolStripMenuItem;
+        private System.Windows.Forms.ComboBox installationPathComboBox;
     }
 }
 
