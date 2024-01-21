@@ -174,6 +174,8 @@ namespace Archeage_Addon_Manager {
                     MessageBox.Show("TODO upload the pak to the server here");
                 }
 
+                PakManager.ExtractFilesFromGamePak(installationPathComboBox.Text + @"\game_pak", new string[] { "/game/scriptsbin/auction/auction.alb", "/game/scriptsbin/auction/auction_view.alb" });
+
                 // TODO: Delete the pakPath file once done
             }
         }
