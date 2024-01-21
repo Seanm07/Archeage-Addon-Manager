@@ -170,16 +170,25 @@ namespace Archeage_Addon_Manager {
 
                 // The generated pak will be created in the temp directory
                 string pakPath = Path.GetTempPath() + "mod.pak";
+                string tempCreatedDir = Path.GetTempPath() + "modsrc";
 
-                string tempCreatedDir = "";
+                // Delete the temporary directory if it already exists from a previous mod
+                if (Directory.Exists(tempCreatedDir))
+                    Directory.Delete(tempCreatedDir, true);
+
+                // Copy the addon source directory to the temporary directory
+                CopyDirectory(selectedFolder, tempCreatedDir);
+
+                // Rename all .lua files to .alb recursively within the temporary directory
+                string[] luaFiles = Directory.GetFiles(tempCreatedDir, "*.lua", SearchOption.AllDirectories);
+                foreach (string luaFile in luaFiles)
+                    File.Move(luaFile, Path.ChangeExtension(luaFile, ".alb"));
 
                 // If only 1 of scriptsbin or scriptsbin64 exists, duplicate it in the pak
-                if (Directory.Exists(selectedFolder + @"\game\scriptsbin") && !Directory.Exists(selectedFolder + @"\game\scriptsbin64")) {
-                    CopyDirectory(selectedFolder + @"\game\scriptsbin", selectedFolder + @"\game\scriptsbin64");
-                    tempCreatedDir = selectedFolder + @"\game\scriptsbin64";
-                } else if (!Directory.Exists(selectedFolder + @"\game\scriptsbin") && Directory.Exists(selectedFolder + @"\game\scriptsbin64")) {
-                    CopyDirectory(selectedFolder + @"\game\scriptsbin64", selectedFolder + @"\game\scriptsbin");
-                    tempCreatedDir = selectedFolder + @"\game\scriptsbin";
+                if (Directory.Exists(tempCreatedDir + @"\game\scriptsbin") && !Directory.Exists(tempCreatedDir + @"\game\scriptsbin64")) {
+                    CopyDirectory(tempCreatedDir + @"\game\scriptsbin", tempCreatedDir + @"\game\scriptsbin64");
+                } else if (!Directory.Exists(tempCreatedDir + @"\game\scriptsbin") && Directory.Exists(tempCreatedDir + @"\game\scriptsbin64")) {
+                    CopyDirectory(tempCreatedDir + @"\game\scriptsbin64", tempCreatedDir + @"\game\scriptsbin");
                 }
 
                 try {
@@ -196,7 +205,7 @@ namespace Archeage_Addon_Manager {
                         throw new IOException("Failed to mount pak to temporary file system!");
 
                     // Mount the addon source directory into the /dir directory of the temporary file system
-                    if (XLPack.Mount("/dir", selectedFolder + @"\", true) == IntPtr.Zero)
+                    if (XLPack.Mount("/dir", tempCreatedDir + @"\", true) == IntPtr.Zero)
                         throw new IOException("Failed to mount directory to temporary file system!");
 
                     // Copy the /dir directory into the /pak directory within the temporary file system
@@ -212,7 +221,8 @@ namespace Archeage_Addon_Manager {
                 // Destroy the temporary file system regardless of success or failure
                 XLPack.DestroyFileSystem();
 
-                if (tempCreatedDir != "")
+                // Delete the temporary directory if it was created
+                if (Directory.Exists(tempCreatedDir))
                     Directory.Delete(tempCreatedDir, true);
 
                 if (!pakError) {
