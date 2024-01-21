@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
@@ -17,7 +18,7 @@ namespace Archeage_Addon_Manager {
         List<AddonWidget> addonWidgets = new List<AddonWidget>();
 
         public MainWindow() {
-            instance = instance ?? this;
+            instance ??= this;
 
             InitializeComponent();
 
@@ -155,14 +156,104 @@ namespace Archeage_Addon_Manager {
         }
 
         private void UploadAddonButtonClick(object sender, EventArgs e) {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.Description = "Select root directory of addon source";
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog(){
+                Description = "Select root directory of addon source"
+            };
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
                 string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(selectedFolder);
 
                 MessageBox.Show(jsonOutput);
+
+                bool pakError = false;
+
+                // The generated pak will be created in the temp directory
+                string pakPath = Path.GetTempPath() + "mod.pak";
+
+                string tempCreatedDir = "";
+
+                // If only 1 of scriptsbin or scriptsbin64 exists, duplicate it in the pak
+                if (Directory.Exists(selectedFolder + @"\game\scriptsbin") && !Directory.Exists(selectedFolder + @"\game\scriptsbin64")) {
+                    CopyDirectory(selectedFolder + @"\game\scriptsbin", selectedFolder + @"\game\scriptsbin64");
+                    tempCreatedDir = selectedFolder + @"\game\scriptsbin64";
+                } else if (!Directory.Exists(selectedFolder + @"\game\scriptsbin") && Directory.Exists(selectedFolder + @"\game\scriptsbin64")) {
+                    CopyDirectory(selectedFolder + @"\game\scriptsbin64", selectedFolder + @"\game\scriptsbin");
+                    tempCreatedDir = selectedFolder + @"\game\scriptsbin";
+                }
+
+                try {
+                    // Create the temporary file system
+                    if(!XLPack.CreateFileSystem())
+                        throw new IOException("Failed to create temporary file system!");
+
+                    // Generate a blank template pak which the addon will be built into
+                    if(!XLPack.CreatePak(pakPath, false))
+                        throw new IOException("Failed to generate blank template pak file!");
+
+                    // Mount the generated pak file into the /pak directory of the temporary file system
+                    if (XLPack.Mount("/pak", pakPath, true) == IntPtr.Zero)
+                        throw new IOException("Failed to mount pak to temporary file system!");
+
+                    // Mount the addon source directory into the /dir directory of the temporary file system
+                    if (XLPack.Mount("/dir", selectedFolder + @"\", true) == IntPtr.Zero)
+                        throw new IOException("Failed to mount directory to temporary file system!");
+
+                    // Copy the /dir directory into the /pak directory within the temporary file system
+                    if (!XLPack.CopyDir("/dir", "/pak"))
+                        throw new IOException("Failed to copy directory into pak within temporary file system!");
+                } catch (IOException ex) {
+                    pakError = true;
+
+                    if (MessageBox.Show(ex.Message, "Failed to generate pak file!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
+                        UploadAddonButtonClick(sender, e);
+                }
+
+                // Destroy the temporary file system regardless of success or failure
+                XLPack.DestroyFileSystem();
+
+                if (tempCreatedDir != "")
+                    Directory.Delete(tempCreatedDir, true);
+
+                if (!pakError) {
+                    // Upload the generated pak file to the specified URL
+                    //string uploadUrl = "https://www.spacemeat.space/aamods/upload.php";
+                    //string response = AddonDataManager.instance.UploadFile(uploadUrl, pakPath);
+
+                    MessageBox.Show("TODO upload the pak to the server here");
+                }
+
+                // TODO: Delete the pakPath file once done
+            }
+        }
+
+        // TODO: To be moved to a FileUtil script
+        static void CopyDirectory(string sourceDir, string destDir) {
+            Directory.CreateDirectory(sourceDir);
+
+            // Get the subdirectories for the specified directory
+            string[] subDirectories = Directory.GetDirectories(sourceDir);
+
+            foreach (string subDir in subDirectories) {
+                // Create the corresponding subdirectory in the destination directory
+                string subDirName = Path.GetFileName(subDir);
+                string newSubDir = Path.Combine(destDir, subDirName);
+
+                Directory.CreateDirectory(newSubDir);
+
+                // Recursively copy the subdirectory
+                CopyDirectory(subDir, newSubDir);
+            }
+
+            // Get all files in the source directory
+            string[] files = Directory.GetFiles(sourceDir);
+
+            // Copy each file to the destination directory
+            foreach (string file in files) {
+                string fileName = Path.GetFileName(file);
+                string destinationPath = Path.Combine(destDir, fileName);
+
+                File.Copy(file, destinationPath, true); // The third parameter allows overwriting existing files
             }
         }
     }
