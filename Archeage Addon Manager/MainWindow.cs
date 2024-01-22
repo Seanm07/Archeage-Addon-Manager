@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using static Archeage_Addon_Manager.AddonDataManager;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
@@ -162,11 +164,14 @@ namespace Archeage_Addon_Manager {
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
-                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(selectedFolder);
+                AddonDataManager.instance.GetFolderInfo(selectedFolder, out FolderInfo folderInfo, out List<string> filePaths);
+                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(folderInfo);
 
                 MessageBox.Show(jsonOutput);
 
-                if (PakManager.GeneratePakFile(selectedFolder)) {
+                MessageBox.Show(string.Join("\n", filePaths));
+                
+                if (PakManager.GeneratePakFile(selectedFolder, "mod")) {
                     // Upload the generated pak file to the specified URL
                     //string uploadUrl = "https://www.spacemeat.space/aamods/upload.php";
                     //string response = AddonDataManager.instance.UploadFile(uploadUrl, pakPath);
@@ -174,7 +179,7 @@ namespace Archeage_Addon_Manager {
                     MessageBox.Show("TODO upload the pak to the server here");
                 }
 
-                PakManager.ExtractFilesFromGamePak(installationPathComboBox.Text + @"\game_pak", new string[] { "/game/scriptsbin/auction/auction.alb", "/game/scriptsbin/auction/auction_view.alb" });
+                PakManager.GenerateUninstallPakFile(installationPathComboBox.Text + @"\game_pak", filePaths.ToArray(), "default");
 
                 // TODO: Delete the pakPath file once done
             }

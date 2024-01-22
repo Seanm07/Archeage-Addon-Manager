@@ -94,11 +94,16 @@ namespace Archeage_Addon_Manager {
             };
         }
 
-        private FolderInfo GetFolderInfo(string folderPath, string basePath) {
+        public void GetFolderInfo(string basePath, out FolderInfo folderInfo, out List<string> filePaths) {
+            GetFolderInfo(basePath, basePath, out folderInfo, out filePaths);
+        }
+
+        private void GetFolderInfo(string folderPath, string basePath, out FolderInfo folderInfo, out List<string> filePaths) {
             bool curFolderIsBase = folderPath == basePath;
+            filePaths = new List<string>();
 
             // Get the folder info for the current folder
-            var folderInfo = new FolderInfo {
+            folderInfo = new FolderInfo {
                 foldername = Path.GetFileName(folderPath),
                 folderpath = folderPath,
                 files = new List<FileInfo>()
@@ -108,12 +113,14 @@ namespace Archeage_Addon_Manager {
             foreach (var filePath in Directory.GetFiles(folderPath)) {
                 var fileInfo = GetFileInfo(filePath, basePath);
                 folderInfo.files.Add(fileInfo);
+                filePaths.Add(fileInfo.filepath);
             }
 
             // Add all subfolders in this folder to the list of files
             foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
-                var subFolderInfo = GetFolderInfo(subFolderPath, basePath);
+                GetFolderInfo(subFolderPath, basePath, out FolderInfo subFolderInfo, out List<string> subFolderFilePaths);
                 folderInfo.subFolders.Add(subFolderInfo);
+                filePaths.AddRange(subFolderFilePaths);
             }
 
             // If we're currently in the base folder, strip folder information about the base folder
@@ -123,16 +130,13 @@ namespace Archeage_Addon_Manager {
                 // Strip the base path from the folder path and replace backslashes with forward slashes
                 folderInfo.folderpath = RelativeFormatPath(folderInfo.folderpath, basePath);
             }
-
-            return folderInfo;
         }
 
         private string RelativeFormatPath(string path, string basePath) {
             return path.Replace(basePath, "").Replace("\\", "/");
         }
 
-        public string CreateJsonForFolder(string folderPath) {
-            var folderInfo = GetFolderInfo(folderPath, folderPath);
+        public string CreateJsonForFolder(FolderInfo folderInfo) {
             var jsonSettings = new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
