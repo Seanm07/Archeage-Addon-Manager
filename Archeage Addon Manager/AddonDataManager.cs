@@ -18,13 +18,6 @@ namespace Archeage_Addon_Manager {
             public string dataPath { get; set; }
         }
 
-        public class FolderInfo {
-            public string foldername { get; set; }
-            public string folderpath { get; set; }
-            public List<FileInfo> files { get; set; } = new List<FileInfo>();
-            public List<FolderInfo> subFolders { get; set; } = new List<FolderInfo>();
-        }
-
         public class FileInfo {
             public string filename { get; set; }
             public string filepath { get; set; }
@@ -94,41 +87,26 @@ namespace Archeage_Addon_Manager {
             };
         }
 
-        public void GetFolderInfo(string basePath, out FolderInfo folderInfo, out List<string> filePaths) {
-            GetFolderInfo(basePath, basePath, out folderInfo, out filePaths);
+        public void GetAddonSrcInfo(string basePath, out List<FileInfo> fileInfos, out List<string> filePaths) {
+            GetAddonSrcInfo(basePath, basePath, out fileInfos, out filePaths);
         }
 
-        private void GetFolderInfo(string folderPath, string basePath, out FolderInfo folderInfo, out List<string> filePaths) {
-            bool curFolderIsBase = folderPath == basePath;
+        private void GetAddonSrcInfo(string folderPath, string basePath, out List<FileInfo> fileInfos, out List<string> filePaths) {
+            fileInfos = new List<FileInfo>();
             filePaths = new List<string>();
-
-            // Get the folder info for the current folder
-            folderInfo = new FolderInfo {
-                foldername = Path.GetFileName(folderPath),
-                folderpath = folderPath,
-                files = new List<FileInfo>()
-            };
 
             // Add all files in this folder to the list of files
             foreach (var filePath in Directory.GetFiles(folderPath)) {
                 var fileInfo = GetFileInfo(filePath, basePath);
-                folderInfo.files.Add(fileInfo);
+                fileInfos.Add(fileInfo);
                 filePaths.Add(fileInfo.filepath);
             }
 
             // Add all subfolders in this folder to the list of files
             foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
-                GetFolderInfo(subFolderPath, basePath, out FolderInfo subFolderInfo, out List<string> subFolderFilePaths);
-                folderInfo.subFolders.Add(subFolderInfo);
+                GetAddonSrcInfo(subFolderPath, basePath, out List<FileInfo> subFolderFileInfos, out List<string> subFolderFilePaths);
+                fileInfos.AddRange(subFolderFileInfos);
                 filePaths.AddRange(subFolderFilePaths);
-            }
-
-            // If we're currently in the base folder, strip folder information about the base folder
-            if (curFolderIsBase) {
-                folderInfo.foldername = folderInfo.folderpath = null;
-            } else {
-                // Strip the base path from the folder path and replace backslashes with forward slashes
-                folderInfo.folderpath = RelativeFormatPath(folderInfo.folderpath, basePath);
             }
         }
 
@@ -136,13 +114,13 @@ namespace Archeage_Addon_Manager {
             return path.Replace(basePath, "").Replace("\\", "/");
         }
 
-        public string CreateJsonForFolder(FolderInfo folderInfo) {
+        public string CreateJsonForFolder(List<FileInfo> fileInfos) {
             var jsonSettings = new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             };
 
-            return JsonConvert.SerializeObject(folderInfo, jsonSettings);
+            return JsonConvert.SerializeObject(fileInfos, jsonSettings);
         }
 
         // Search for ArcheAge installation paths on all drives

@@ -164,24 +164,25 @@ namespace Archeage_Addon_Manager {
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
-                AddonDataManager.instance.GetFolderInfo(selectedFolder, out FolderInfo folderInfo, out List<string> filePaths);
-                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(folderInfo);
+                AddonDataManager.instance.GetAddonSrcInfo(selectedFolder, out List<AddonDataManager.FileInfo> fileInfos, out List<string> filePaths);
+                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(fileInfos);
 
-                MessageBox.Show(jsonOutput);
+                // Create a text file named addon.json at FileUtil.TempFilePath() + "addon.json" and write the jsonOutput to it
+                string jsonPath = FileUtil.TempFilePath() + "addon.json";
+                File.WriteAllText(jsonPath, jsonOutput);
 
-                MessageBox.Show(string.Join("\n", filePaths));
+                MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted them from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
                 
                 if (PakManager.GeneratePakFile(selectedFolder, "mod")) {
                     // Upload the generated pak file to the specified URL
                     //string uploadUrl = "https://www.spacemeat.space/aamods/upload.php";
                     //string response = AddonDataManager.instance.UploadFile(uploadUrl, pakPath);
 
-                    MessageBox.Show("TODO upload the pak to the server here");
+                    //MessageBox.Show("TODO upload the pak to the server here");
                 }
 
+                // TODO: Make this asyncronous
                 PakManager.GenerateUninstallPakFile(installationPathComboBox.Text + @"\game_pak", filePaths.ToArray(), "default");
-
-                // TODO: Delete the pakPath file once done
             }
         }
     }
