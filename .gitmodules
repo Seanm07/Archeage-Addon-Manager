@@ -1,0 +1,3 @@
+[submodule "aapatcher"]
+	path = aapatcher
+	url = https://github.com/Seanm07/aapatcher
