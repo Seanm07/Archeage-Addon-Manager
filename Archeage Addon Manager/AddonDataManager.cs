@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Archeage_Addon_Manager {
     public class AddonDataManager {
@@ -16,6 +18,11 @@ namespace Archeage_Addon_Manager {
             public string author { get; set; }
             public float version { get; set; }
             public string dataPath { get; set; }
+            public List<FileInfo> fileInfos { get; set; }
+
+            public AddonData() {
+                fileInfos = new List<FileInfo>();
+            }
         }
 
         public class FileInfo {
@@ -87,25 +94,25 @@ namespace Archeage_Addon_Manager {
             };
         }
 
-        public void GetAddonSrcInfo(string basePath, out List<FileInfo> fileInfos, out List<string> filePaths) {
-            GetAddonSrcInfo(basePath, basePath, out fileInfos, out filePaths);
+        public void GetAddonSrcInfo(string basePath, out AddonData addonInfo, out List<string> filePaths) {
+            GetAddonSrcInfo(basePath, basePath, out addonInfo, out filePaths);
         }
 
-        private void GetAddonSrcInfo(string folderPath, string basePath, out List<FileInfo> fileInfos, out List<string> filePaths) {
-            fileInfos = new List<FileInfo>();
+        private void GetAddonSrcInfo(string folderPath, string basePath, out AddonData addonInfo, out List<string> filePaths) {
+            addonInfo = new AddonData();
             filePaths = new List<string>();
 
             // Add all files in this folder to the list of files
             foreach (var filePath in Directory.GetFiles(folderPath)) {
                 var fileInfo = GetFileInfo(filePath, basePath);
-                fileInfos.Add(fileInfo);
+                addonInfo.fileInfos.Add(fileInfo);
                 filePaths.Add(fileInfo.filepath);
             }
 
             // Add all subfolders in this folder to the list of files
             foreach (var subFolderPath in Directory.GetDirectories(folderPath)) {
-                GetAddonSrcInfo(subFolderPath, basePath, out List<FileInfo> subFolderFileInfos, out List<string> subFolderFilePaths);
-                fileInfos.AddRange(subFolderFileInfos);
+                GetAddonSrcInfo(subFolderPath, basePath, out AddonData subFolderFileInfos, out List<string> subFolderFilePaths);
+                addonInfo.fileInfos.AddRange(subFolderFileInfos.fileInfos);
                 filePaths.AddRange(subFolderFilePaths);
             }
         }
@@ -114,13 +121,13 @@ namespace Archeage_Addon_Manager {
             return path.Replace(basePath, "").Replace("\\", "/");
         }
 
-        public string CreateJsonForFolder(List<FileInfo> fileInfos) {
+        public string CreateJsonForFolder(AddonData addonInfo) {
             var jsonSettings = new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             };
 
-            return JsonConvert.SerializeObject(fileInfos, jsonSettings);
+            return JsonConvert.SerializeObject(addonInfo, jsonSettings);
         }
 
         // Search for ArcheAge installation paths on all drives
@@ -155,6 +162,24 @@ namespace Archeage_Addon_Manager {
             validPaths.Add("Browse..");
 
             return validPaths.ToArray();
+        }
+
+        public void UploadAddonToServer(string addonZipPath) {
+            // TODO: This is temporary! Just using ftp for now, this will change to a POST request later
+            string ftpHost = "ftp://spacemeat.space";
+            string username = Microsoft.VisualBasic.Interaction.InputBox("Enter FTP Username", "FTP Details", "");
+            string password = Microsoft.VisualBasic.Interaction.InputBox("Enter FTP Password", "FTP Details", "");
+
+            try {
+                using (WebClient client = new WebClient()) {
+                    client.Credentials = new NetworkCredential(username, password);
+                    client.UploadFile(ftpHost + "/spacemeat.space/www/aamods/data/" + Path.GetFileName(addonZipPath), WebRequestMethods.Ftp.UploadFile, addonZipPath);
+
+                    MessageBox.Show("Addon uploaded successfully!");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show("Error uploading file to FTP server: " + ex.Message);
+            }
         }
     }
 }

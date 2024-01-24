@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using static Archeage_Addon_Manager.AddonDataManager;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
-        public static MainWindow instance;
-
         public class AddonWidget
         {
             public CheckBox checkbox { get; set; }
             public Label titleLabel { get; set; }
             public Label descriptionLabel { get; set; }
         }
+
+        public static MainWindow instance;
 
         List<AddonWidget> addonWidgets = new List<AddonWidget>();
 
@@ -164,25 +162,59 @@ namespace Archeage_Addon_Manager {
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
-                AddonDataManager.instance.GetAddonSrcInfo(selectedFolder, out List<AddonDataManager.FileInfo> fileInfos, out List<string> filePaths);
-                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(fileInfos);
+                AddonDataManager.instance.GetAddonSrcInfo(selectedFolder, out AddonDataManager.AddonData addonInfo, out List<string> filePaths);
+
+                // TODO: Make a nicer looking form for the user to enter all the info at once while the addon packs in the background
+                addonInfo.name = Microsoft.VisualBasic.Interaction.InputBox("Enter a name for your addon", "Addon Name", Path.GetFileName(selectedFolder));
+                addonInfo.description = Microsoft.VisualBasic.Interaction.InputBox("Enter a description for your addon", "Addon Description", "No description provided");
+                addonInfo.version = float.Parse(Microsoft.VisualBasic.Interaction.InputBox("Enter a version number for your addon", "Addon Version", "1.00"));
+                addonInfo.author = Environment.UserName;
+
+                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(addonInfo);
 
                 // Create a text file named addon.json at FileUtil.TempFilePath() + "addon.json" and write the jsonOutput to it
                 string jsonPath = FileUtil.TempFilePath() + "addon.json";
                 File.WriteAllText(jsonPath, jsonOutput);
 
-                MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted them from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
-                
-                if (PakManager.GeneratePakFile(selectedFolder, "mod")) {
-                    // Upload the generated pak file to the specified URL
-                    //string uploadUrl = "https://www.spacemeat.space/aamods/upload.php";
-                    //string response = AddonDataManager.instance.UploadFile(uploadUrl, pakPath);
+                MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
 
-                    //MessageBox.Show("TODO upload the pak to the server here");
+                string addonFileName = addonInfo.name.Replace(" ", "_").ToLower();
+
+                try {
+                    if (!PakManager.GeneratePakFile(selectedFolder, "mod"))
+                        throw new IOException("Failed to generate addon pak file!");
+
+                    // TODO: Make this asyncronous
+                    if (!PakManager.GenerateUninstallPakFile(installationPathComboBox.Text + @"\game_pak", filePaths.ToArray(), "default"))
+                        throw new IOException("Failed to generate uninstall pak file!");
+
+                    // TODO: Make a function to load these names so we don't have different scripts directly referencing them by string
+                    string[] addonFiles = new string[3] {
+                        FileUtil.TempFilePath() + "addon.json",
+                        FileUtil.TempFilePath() + "mod.pak",
+                        FileUtil.TempFilePath() + "default.pak"
+                    };
+
+                    // Move the addon files into a zip
+                    if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonFileName + ".zip"))
+                        throw new IOException("Failed to build addon zip file!");
+                } catch (IOException ex) {
+                    if (MessageBox.Show(ex.Message, "Failed to package addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
+                        UploadAddonButtonClick(sender, e);
+                    return;
                 }
 
-                // TODO: Make this asyncronous
-                PakManager.GenerateUninstallPakFile(installationPathComboBox.Text + @"\game_pak", filePaths.ToArray(), "default");
+                AddonDataManager.instance.UploadAddonToServer(FileUtil.TempFilePath() + addonFileName + ".zip");
+
+                // Cleanup the json file
+                File.Delete(jsonPath);
+
+                // Cleanup the pak files
+                File.Delete(FileUtil.TempFilePath() + "mod.pak");
+                File.Delete(FileUtil.TempFilePath() + "default.pak");
+
+                // Cleanup the zip file
+                File.Delete(FileUtil.TempFilePath() + addonFileName + ".zip");
             }
         }
     }

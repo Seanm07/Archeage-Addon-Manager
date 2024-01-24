@@ -113,9 +113,8 @@ namespace Archeage_Addon_Manager {
             // Destroy the temporary file system regardless of success or failure
             XLPack.DestroyFileSystem();
 
-            // TODO: Uncomment when done debugging
             // Delete the temporary directory if it was created
-            //FileUtil.DeleteDirectory(tempCreatedDir);
+            FileUtil.DeleteDirectory(tempCreatedDir);
 
             return pakGenerated;
         }
