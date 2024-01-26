@@ -15,18 +15,9 @@ namespace Archeage_Addon_Manager
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            string envFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-
-            if (File.Exists(envFilePath)) {
-                foreach (string line in File.ReadLines(envFilePath)) {
-                    string[] parts = line.Split('=');
-                    if (parts.Length == 2) {
-                        string key = parts[0].Trim();
-                        string value = parts[1].Trim();
-                        Environment.SetEnvironmentVariable(key, value, EnvironmentVariableTarget.Process);
-                    }
-                }
-            }
+            // Create the temporary directory if it doesn't exist
+            if(!Directory.Exists(FileUtil.TempFilePath()))
+                Directory.CreateDirectory(FileUtil.TempFilePath());
 
             // Initialise our AddonDataManager
             new AddonDataManager();

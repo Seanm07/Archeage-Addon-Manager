@@ -118,5 +118,40 @@ namespace Archeage_Addon_Manager {
 
             return pakGenerated;
         }
+
+        public static bool InstallPakFile(string gamePakPath, string pakPath) {
+            bool pakInstalled = true;
+
+            try {
+                if(FileUtil.IsFileLocked(gamePakPath))
+                    throw new IOException("Game pak already in use by another program!\nClose the ArcheAge client and launcher to install addons.");
+
+                // Create the temporary file system
+                if (!XLPack.CreateFileSystem())
+                    throw new IOException("Failed to create temporary file system!");
+
+                // Mount the game pak into the /src directory of the temporary file system
+                IntPtr masterMount = XLPack.Mount("/master", gamePakPath, true);
+
+                if (masterMount == IntPtr.Zero)
+                    throw new IOException("Failed to mount game pak to temporary file system!");
+
+                if(!XLPack.ApplyPatchPak("/master", pakPath))
+                    throw new IOException("Failed to apply patch pak!");
+
+                if(!XLPack.Unmount(masterMount))
+                    throw new IOException("Failed to unmount game pak from temporary file system!");
+            } catch (IOException ex) {
+                pakInstalled = false;
+
+                if (MessageBox.Show(ex.Message, "Failed to install addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
+                    pakInstalled = InstallPakFile(gamePakPath, pakPath);
+            }
+
+            // Destroy the temporary file system regardless of success or failure
+            XLPack.DestroyFileSystem();
+
+            return pakInstalled;
+        }
     }
 }

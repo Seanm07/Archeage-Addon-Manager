@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
@@ -31,9 +32,37 @@ namespace Archeage_Addon_Manager {
         }
 
         private void InstallButtonClick(object sender, EventArgs e) {
+            // List of file paths
+            List<string> scriptsWhichWillBeUpdated = new List<string>();
+
+            // Check if any of the files in the addons are duplicates of another selected addon
             for (int i = 0; i < addonWidgets.Count; i++) {
                 if (addonWidgets[i].checkbox.Checked) {
-                    Console.WriteLine("Checked: " + addonWidgets[i].titleLabel.Text);
+                    foreach(AddonFileInfo fileInfo in AddonDataManager.instance.addons[i].fileInfos) {
+                        scriptsWhichWillBeUpdated.Add(fileInfo.filepath);
+                    }
+                }
+            }
+
+            // Check for any duplicates in the scriptsWhichWillBeUpdated list, throw an error if there are any
+            // Converting it to a hasset will remove duplicates then we can check if the count changed
+            if(scriptsWhichWillBeUpdated.Count != scriptsWhichWillBeUpdated.ToHashSet().Count()) {
+                MessageBox.Show("Two or more selected addons attempt to modify the same scripts so cannot be installed together.", "Conflicting addons selected!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            for (int i = 0; i < addonWidgets.Count; i++) {
+                if (addonWidgets[i].checkbox.Checked) {
+                    // Download file from https://www.spacemeat.space/aamods/data/addon.zip into FileUtil.TempFilePath()
+                    string zipPath = FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + ".zip";
+                    new System.Net.WebClient().DownloadFile("https://www.spacemeat.space/aamods/data/" + AddonDataManager.instance.addons[i].packagedFileName + ".zip", zipPath);
+
+                    // Extract mod.zip from the zip file into FileUtil.TempFilePath() then delete the zip
+                    FileUtil.ExtractZipFile(zipPath, FileUtil.TempFilePath());
+                    File.Delete(zipPath);
+
+                    MessageBox.Show("Beginning " + addonWidgets[i].titleLabel.Text + " installation!", "Press ok to begin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    PakManager.InstallPakFile(FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + @"\mod.pak", installationPathComboBox.Text + @"\game_pak");
                 }
             }
         }
@@ -54,6 +83,11 @@ namespace Archeage_Addon_Manager {
             }
 
             label1.Text = totalChecked + " addon" + (totalChecked > 1 ? "s" : "") + " selected";
+        }
+
+        public void ClearAddonWidgets() {
+            panel1.Controls.Clear();
+            addonWidgets.Clear();
         }
 
         // Visually display a widget for an addon in the addon list panel
@@ -169,6 +203,7 @@ namespace Archeage_Addon_Manager {
                 addonInfo.description = Microsoft.VisualBasic.Interaction.InputBox("Enter a description for your addon", "Addon Description", "No description provided");
                 addonInfo.version = float.Parse(Microsoft.VisualBasic.Interaction.InputBox("Enter a version number for your addon", "Addon Version", "1.00"));
                 addonInfo.author = Environment.UserName;
+                addonInfo.packagedFileName = addonInfo.name.Replace(" ", "_").ToLower();
 
                 string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(addonInfo);
 
@@ -177,8 +212,6 @@ namespace Archeage_Addon_Manager {
                 File.WriteAllText(jsonPath, jsonOutput);
 
                 MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
-
-                string addonFileName = addonInfo.name.Replace(" ", "_").ToLower();
 
                 try {
                     if (!PakManager.GeneratePakFile(selectedFolder, "mod"))
@@ -196,7 +229,7 @@ namespace Archeage_Addon_Manager {
                     };
 
                     // Move the addon files into a zip
-                    if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonFileName + ".zip"))
+                    if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
                         throw new IOException("Failed to build addon zip file!");
                 } catch (IOException ex) {
                     if (MessageBox.Show(ex.Message, "Failed to package addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
@@ -204,7 +237,7 @@ namespace Archeage_Addon_Manager {
                     return;
                 }
 
-                AddonDataManager.instance.UploadAddonToServer(FileUtil.TempFilePath() + addonFileName + ".zip");
+                AddonDataManager.instance.UploadAddonToServer(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
 
                 // Cleanup the json file
                 File.Delete(jsonPath);
@@ -214,7 +247,9 @@ namespace Archeage_Addon_Manager {
                 File.Delete(FileUtil.TempFilePath() + "default.pak");
 
                 // Cleanup the zip file
-                File.Delete(FileUtil.TempFilePath() + addonFileName + ".zip");
+                File.Delete(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
+
+                AddonDataManager.instance.ReloadAddonsFromDataSources();
             }
         }
     }

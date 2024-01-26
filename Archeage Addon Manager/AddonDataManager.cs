@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Archeage_Addon_Manager {
     public class AddonDataManager {
@@ -17,30 +17,30 @@ namespace Archeage_Addon_Manager {
             public string description { get; set; }
             public string author { get; set; }
             public float version { get; set; }
-            public string dataPath { get; set; }
-            public List<FileInfo> fileInfos { get; set; }
+            public string packagedFileName { get; set; }
+            public List<AddonFileInfo> fileInfos { get; set; }
 
             public AddonData() {
-                fileInfos = new List<FileInfo>();
+                fileInfos = new List<AddonFileInfo>();
             }
         }
 
-        public class FileInfo {
-            public string filename { get; set; }
-            public string filepath { get; set; }
-            public long filesize { get; set; }
-            public string checksum { get; set; }
-        }
-
-        List<AddonData> addons = new List<AddonData>();
+        public List<AddonData> addons = new List<AddonData>();
 
         public AddonDataManager() {
             instance ??= this;
         }
 
+        public void ReloadAddonsFromDataSources() {
+            MainWindow.instance.ClearAddonWidgets();
+            addons.Clear();
+
+            LoadAddonsFromDataSources();
+        }
+
         public void LoadAddonsFromDataSources() {
             // TODO: Allow the user to add custom addon sources which is saved to a config file/registry or something
-            AddAddonsFromURL("https://www.spacemeat.space/aamods/data.json");
+            AddAddonsFromURL("https://www.spacemeat.space/aamods/data/list.php");
         }
 
         // Load addons from a URL containing a JSON array of AddonData objects
@@ -70,30 +70,6 @@ namespace Archeage_Addon_Manager {
             }
         }
 
-        private string CalculateChecksum(string filePath) {
-            using (var md5 = MD5.Create()) {
-                using (var stream = File.OpenRead(filePath)) {
-                    byte[] hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLower();
-                }
-            }
-        }
-
-        private long GetFileSize(string filePath) {
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read)) {
-                return stream.Length;
-            }
-        }
-
-        private FileInfo GetFileInfo(string filePath, string basePath) {
-            return new FileInfo {
-                filename = Path.GetFileName(filePath),
-                filepath = RelativeFormatPath(filePath, basePath),
-                filesize = GetFileSize(filePath),
-                checksum = CalculateChecksum(filePath)
-            };
-        }
-
         public void GetAddonSrcInfo(string basePath, out AddonData addonInfo, out List<string> filePaths) {
             GetAddonSrcInfo(basePath, basePath, out addonInfo, out filePaths);
         }
@@ -104,7 +80,7 @@ namespace Archeage_Addon_Manager {
 
             // Add all files in this folder to the list of files
             foreach (var filePath in Directory.GetFiles(folderPath)) {
-                var fileInfo = GetFileInfo(filePath, basePath);
+                var fileInfo = FileUtil.GetFileInfo(filePath, basePath);
                 addonInfo.fileInfos.Add(fileInfo);
                 filePaths.Add(fileInfo.filepath);
             }
@@ -115,11 +91,7 @@ namespace Archeage_Addon_Manager {
                 addonInfo.fileInfos.AddRange(subFolderFileInfos.fileInfos);
                 filePaths.AddRange(subFolderFilePaths);
             }
-        }
-
-        private string RelativeFormatPath(string path, string basePath) {
-            return path.Replace(basePath, "").Replace("\\", "/");
-        }
+        }        
 
         public string CreateJsonForFolder(AddonData addonInfo) {
             var jsonSettings = new JsonSerializerSettings {
@@ -165,20 +137,38 @@ namespace Archeage_Addon_Manager {
         }
 
         public void UploadAddonToServer(string addonZipPath) {
-            // TODO: This is temporary! Just using ftp for now, this will change to a POST request later
-            string ftpHost = "ftp://spacemeat.space";
-            string username = Microsoft.VisualBasic.Interaction.InputBox("Enter FTP Username", "FTP Details", "");
-            string password = Microsoft.VisualBasic.Interaction.InputBox("Enter FTP Password", "FTP Details", "");
+            // Use Task.Run to call the async method from a non-async context
+            Task.Run(() => UploadAddonToServerAsync(addonZipPath)).Wait();
+        }
+
+        // TODO: Function cleanup
+        public async Task UploadAddonToServerAsync(string addonZipPath) {
+            MessageBox.Show("Uploading addon to server...");
 
             try {
-                using (WebClient client = new WebClient()) {
-                    client.Credentials = new NetworkCredential(username, password);
-                    client.UploadFile(ftpHost + "/spacemeat.space/www/aamods/data/" + Path.GetFileName(addonZipPath), WebRequestMethods.Ftp.UploadFile, addonZipPath);
+                using (HttpClient client = new HttpClient()) {
+                    string phpScriptUrl = "https://www.spacemeat.space/aamods/data/upload.php";
 
-                    MessageBox.Show("Addon uploaded successfully!");
+                    // Create multipart form content
+                    using (MultipartFormDataContent formData = new MultipartFormDataContent()) {
+                        // Add the ZIP file to the form data
+                        byte[] fileBytes = File.ReadAllBytes(addonZipPath);
+                        formData.Add(new ByteArrayContent(fileBytes), "zip_file", Path.GetFileName(addonZipPath));
+
+                        // Make the POST request
+                        HttpResponseMessage response = await client.PostAsync(phpScriptUrl, formData);
+
+                        // Check the response status
+                        if (response.IsSuccessStatusCode) {
+                            string responseText = await response.Content.ReadAsStringAsync();
+                            MessageBox.Show(responseText);
+                        } else {
+                            MessageBox.Show("Error uploading file: " + response.ReasonPhrase);
+                        }
+                    }
                 }
             } catch (Exception ex) {
-                MessageBox.Show("Error uploading file to FTP server: " + ex.Message);
+                MessageBox.Show("Error uploading file: " + ex.Message);
             }
         }
     }
