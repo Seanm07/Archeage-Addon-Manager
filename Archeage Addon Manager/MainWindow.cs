@@ -58,11 +58,11 @@ namespace Archeage_Addon_Manager {
                     new System.Net.WebClient().DownloadFile("https://www.spacemeat.space/aamods/data/" + AddonDataManager.instance.addons[i].packagedFileName + ".zip", zipPath);
 
                     // Extract mod.zip from the zip file into FileUtil.TempFilePath() then delete the zip
-                    FileUtil.ExtractZipFile(zipPath, FileUtil.TempFilePath());
+                    FileUtil.ExtractZipFile(zipPath, FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName);
                     File.Delete(zipPath);
 
                     MessageBox.Show("Beginning " + addonWidgets[i].titleLabel.Text + " installation!", "Press ok to begin", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    PakManager.InstallPakFile(FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + @"\mod.pak", installationPathComboBox.Text + @"\game_pak");
+                    PakManager.InstallPakFile(installationPathComboBox.Text + @"\game_pak", FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + @"\mod.pak");
                 }
             }
         }
