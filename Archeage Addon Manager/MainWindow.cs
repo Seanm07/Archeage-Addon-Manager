@@ -7,8 +7,7 @@ using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
-        public class AddonWidget
-        {
+        public class AddonWidget {
             public CheckBox checkbox { get; set; }
             public Label titleLabel { get; set; }
             public Label descriptionLabel { get; set; }
@@ -22,6 +21,8 @@ namespace Archeage_Addon_Manager {
             instance ??= this;
 
             InitializeComponent();
+
+
 
             // Load addons from data sources
             AddonDataManager.instance.LoadAddonsFromDataSources();
@@ -38,7 +39,7 @@ namespace Archeage_Addon_Manager {
             // Check if any of the files in the addons are duplicates of another selected addon
             for (int i = 0; i < addonWidgets.Count; i++) {
                 if (addonWidgets[i].checkbox.Checked) {
-                    foreach(AddonFileInfo fileInfo in AddonDataManager.instance.addons[i].fileInfos) {
+                    foreach (AddonFileInfo fileInfo in AddonDataManager.instance.addons[i].fileInfos) {
                         scriptsWhichWillBeUpdated.Add(fileInfo.filepath);
                     }
                 }
@@ -46,7 +47,7 @@ namespace Archeage_Addon_Manager {
 
             // Check for any duplicates in the scriptsWhichWillBeUpdated list, throw an error if there are any
             // Converting it to a hasset will remove duplicates then we can check if the count changed
-            if(scriptsWhichWillBeUpdated.Count != scriptsWhichWillBeUpdated.ToHashSet().Count()) {
+            if (scriptsWhichWillBeUpdated.Count != scriptsWhichWillBeUpdated.ToHashSet().Count()) {
                 MessageBox.Show("Two or more selected addons attempt to modify the same scripts so cannot be installed together.", "Conflicting addons selected!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -97,7 +98,7 @@ namespace Archeage_Addon_Manager {
                 Dock = DockStyle.Top,
                 Width = panel1.Width - SystemInformation.VerticalScrollBarWidth,
                 AutoSize = true,
-                BackColor = Color.LightGray
+                BackColor = Color.FromArgb(33, 35, 38),
             };
 
             // Container for the checkbox so we can center it
@@ -119,7 +120,7 @@ namespace Archeage_Addon_Manager {
             // Group to contain right side text labels
             FlowLayoutPanel textGroup = new FlowLayoutPanel() {
                 Width = horizontalGroup.Width - checkboxGroup.Width,
-                Height = 43 + ((addonData.description.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
+                Height = 50 + ((addonData.description.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
                 Margin = new Padding(0, 0, 0, 0)
             };
 
@@ -128,7 +129,8 @@ namespace Archeage_Addon_Manager {
                 Width = textGroup.Width,
                 Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
                 Text = addonData.name + " - v" + addonData.version + " by " + addonData.author,
-                Margin = new Padding(0, 0, 0, 0)
+                Margin = new Padding(0, 5, 0, 0),
+                ForeColor = Color.White
             };
 
             // Description label displayed below the title label
@@ -136,7 +138,8 @@ namespace Archeage_Addon_Manager {
                 Width = textGroup.Width,
                 AutoSize = true,
                 Text = addonData.description,
-                Margin = new Padding(0, 0, 0, 0)
+                Margin = new Padding(0, 0, 0, 0),
+                ForeColor = Color.White
             };
 
             // Add the title and description labels to the right side text group
@@ -148,11 +151,11 @@ namespace Archeage_Addon_Manager {
             horizontalGroup.Controls.Add(textGroup);
 
             // Create a spacer to separate each addon with a visual spacer
-            FlowLayoutPanel spacerPanel = new FlowLayoutPanel(){
+            FlowLayoutPanel spacerPanel = new FlowLayoutPanel() {
                 Dock = DockStyle.Top,
                 Width = panel1.Width - SystemInformation.VerticalScrollBarWidth,
                 Height = 1,
-                BackColor = Color.White
+                BackColor = Color.FromArgb(21, 23, 26)
             };
 
             // Controls added to the panel are added bottom to top based on the top dock style
@@ -190,7 +193,7 @@ namespace Archeage_Addon_Manager {
         }
 
         private void UploadAddonButtonClick(object sender, EventArgs e) {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog(){
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
                 Description = "Select root directory of addon source"
             };
 
@@ -251,6 +254,44 @@ namespace Archeage_Addon_Manager {
 
                 AddonDataManager.instance.ReloadAddonsFromDataSources();
             }
+        }
+
+        private bool isDragging = false;
+        private bool dragReady = false;
+        private Point lastMousePosition;
+
+        private void windowDragPanel_MouseDown(object sender, MouseEventArgs e) {
+            if (e.Button == MouseButtons.Left) {
+                isDragging = true;
+                dragReady = false;
+                lastMousePosition = e.Location;
+            }
+        }
+
+        private void windowDragPanel_MouseUp(object sender, MouseEventArgs e) {
+            if (e.Button == MouseButtons.Left) {
+                isDragging = false;
+            }
+        }
+
+        private void windowDragPanel_MouseMove(object sender, MouseEventArgs e) {
+            if (isDragging) {
+                Point currentMousePosition = Control.MousePosition;
+                if (dragReady) {
+                    int deltaX = currentMousePosition.X - lastMousePosition.X;
+                    int deltaY = currentMousePosition.Y - lastMousePosition.Y;
+
+                    this.Location = new Point(this.Location.X + deltaX, this.Location.Y + deltaY);
+                } else {
+                    dragReady = true;
+                }
+
+                lastMousePosition = currentMousePosition;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e) {
+            Environment.Exit(0);
         }
     }
 }
