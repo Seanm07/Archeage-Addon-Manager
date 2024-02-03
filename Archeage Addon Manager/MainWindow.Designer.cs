@@ -116,12 +116,13 @@
             // 
             menuStrip1.BackColor = System.Drawing.Color.Transparent;
             menuStrip1.Dock = System.Windows.Forms.DockStyle.None;
+            menuStrip1.GripMargin = new System.Windows.Forms.Padding(2);
             menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, developersToolStripMenuItem, helpToolStripMenuItem });
             menuStrip1.Location = new System.Drawing.Point(-1, 2);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
             menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            menuStrip1.Size = new System.Drawing.Size(167, 24);
+            menuStrip1.Size = new System.Drawing.Size(287, 24);
             menuStrip1.TabIndex = 4;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -137,18 +138,21 @@
             // 
             // manageAddonSourcesToolStripMenuItem
             // 
+            manageAddonSourcesToolStripMenuItem.Image = Properties.Resources.update;
             manageAddonSourcesToolStripMenuItem.Name = "manageAddonSourcesToolStripMenuItem";
             manageAddonSourcesToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             manageAddonSourcesToolStripMenuItem.Text = "Check For Updates";
             // 
             // propertiesToolStripMenuItem
             // 
+            propertiesToolStripMenuItem.Image = Properties.Resources.settings;
             propertiesToolStripMenuItem.Name = "propertiesToolStripMenuItem";
             propertiesToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            propertiesToolStripMenuItem.Text = "Properties";
+            propertiesToolStripMenuItem.Text = "Settings";
             // 
             // developersToolStripMenuItem
             // 
+            developersToolStripMenuItem.BackColor = System.Drawing.Color.Transparent;
             developersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { uploadAddonToolStripMenuItem });
             developersToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             developersToolStripMenuItem.ForeColor = System.Drawing.Color.White;
@@ -158,6 +162,7 @@
             // 
             // uploadAddonToolStripMenuItem
             // 
+            uploadAddonToolStripMenuItem.Image = Properties.Resources.cloud_upload;
             uploadAddonToolStripMenuItem.Name = "uploadAddonToolStripMenuItem";
             uploadAddonToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             uploadAddonToolStripMenuItem.Text = "Upload Addon";
@@ -174,8 +179,9 @@
             // 
             // creditsToolStripMenuItem
             // 
+            creditsToolStripMenuItem.Image = Properties.Resources.about;
             creditsToolStripMenuItem.Name = "creditsToolStripMenuItem";
-            creditsToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            creditsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             creditsToolStripMenuItem.Text = "About";
             creditsToolStripMenuItem.Click += ShowAboutDialog;
             // 
