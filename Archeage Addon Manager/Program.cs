@@ -22,6 +22,8 @@ namespace Archeage_Addon_Manager
             // Initialise our AddonDataManager
             new AddonDataManager();
 
+            new DeveloperManager();
+
             Application.Run(new MainWindow());            
         }
     }

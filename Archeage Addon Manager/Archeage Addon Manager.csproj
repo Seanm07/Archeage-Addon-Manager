@@ -33,6 +33,10 @@
     <None Remove="Resources\about.png" />
     <None Remove="Resources\bg.png" />
     <None Remove="Resources\cloud_upload.png" />
+    <None Remove="Resources\daru_green.png" />
+    <None Remove="Resources\destruction.png" />
+    <None Remove="Resources\lock.png" />
+    <None Remove="Resources\purify.png" />
     <None Remove="Resources\settings.png" />
     <None Remove="Resources\update.png" />
   </ItemGroup>
@@ -56,6 +60,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\cloud_upload.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\daru_green.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\destruction.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\lock.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\purify.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\settings.png">

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
+        // TODO: Probably move this to a separate script
         public class ToolstripRenderer : ToolStripProfessionalRenderer {
 
             // Override the system default menu item background rendering
@@ -35,7 +36,7 @@ namespace Archeage_Addon_Manager {
                     }
                 }
 
-                
+
             }
 
             protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
@@ -75,6 +76,7 @@ namespace Archeage_Addon_Manager {
             // Use our custom renderer for the menu strip
             menuStrip1.Renderer = new ToolstripRenderer();
 
+            UpdateDeveloperButtonState();
 
             // Load addons from data sources
             AddonDataManager.instance.LoadAddonsFromDataSources();
@@ -244,67 +246,73 @@ namespace Archeage_Addon_Manager {
             MessageBox.Show("Not endorsed by XLGames or Kakao Games, we don't reflect views or opinion of anyone officially involved in Archeage.\n\nKakao strongly does not recommend addon usage, you accept the potential game breaking risks!\n\nArcheage Addon Manager created by Nidoran\n\nBig thanks to Ingram for all his work and help to make this possible and his work on AAPatcher.\n\nAdditional thanks to Tamaki & Strawberry", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void UploadAddonButtonClick(object sender, EventArgs e) {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
-                Description = "Select root directory of addon source"
+        private void DeveloperActionButtonClick(object sender, EventArgs e) {
+            if(DeveloperManager.instance.isLoggedIn) {
+                if (DeveloperManager.instance.isDeveloper) {
+                    DeveloperManager.instance.UploadAddonButtonClick(installationPathComboBox.Text);
+                } else {
+                    MessageBox.Show("Sorry but you don't have permission to upload addons!\nDM Nidoran on discord if you're interested in getting upload access.", "Developer access required!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            } else {
+                DeveloperManager.instance.LoginButtonClick();
+            }
+        }
+
+        private Panel loginOverlayPanel;
+        private TextBox loginOverlayTextbox;
+        private Button loginOverlayButton;
+
+        public void DisplayLoginOverlay() {
+            loginOverlayPanel = new Panel() {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(200, 33, 35, 38),
             };
 
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
-                string selectedFolder = folderBrowserDialog.SelectedPath;
-                AddonDataManager.instance.GetAddonSrcInfo(selectedFolder, out AddonDataManager.AddonData addonInfo, out List<string> filePaths);
+            loginOverlayTextbox = new TextBox() {
+                Width = 200,
+                Height = 20,
+                Location = new Point((this.Width / 2) - 100, (this.Height / 2) - 10),
+                Text = "Enter code after authorising discord"
+            };
 
-                // TODO: Make a nicer looking form for the user to enter all the info at once while the addon packs in the background
-                addonInfo.name = Microsoft.VisualBasic.Interaction.InputBox("Enter a name for your addon", "Addon Name", Path.GetFileName(selectedFolder));
-                addonInfo.description = Microsoft.VisualBasic.Interaction.InputBox("Enter a description for your addon", "Addon Description", "No description provided");
-                addonInfo.version = float.Parse(Microsoft.VisualBasic.Interaction.InputBox("Enter a version number for your addon", "Addon Version", "1.00"));
-                addonInfo.author = Environment.UserName;
-                addonInfo.packagedFileName = addonInfo.name.Replace(" ", "_").ToLower();
+            loginOverlayButton = new Button() {
+                Width = 200,
+                Height = 20,
+                Location = new Point((this.Width / 2) - 100, (this.Height / 2) + 10),
+                Text = "Link to Discord",
+                BackColor = Color.FromArgb(255, 255, 255),
+            };
 
-                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(addonInfo);
+            Controls.Add(loginOverlayPanel);
+            loginOverlayPanel.Controls.Add(loginOverlayTextbox);
+            loginOverlayPanel.Controls.Add(loginOverlayButton);
 
-                // Create a text file named addon.json at FileUtil.TempFilePath() + "addon.json" and write the jsonOutput to it
-                string jsonPath = FileUtil.TempFilePath() + "addon.json";
-                File.WriteAllText(jsonPath, jsonOutput);
+            loginOverlayPanel.BringToFront();
 
-                MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
+            loginOverlayButton.Click += (sender, e) => {
+                DeveloperManager.instance.LoginLinkButtonConfirm(loginOverlayTextbox.Text);
+            };
+        }
 
-                try {
-                    if (!PakManager.GeneratePakFile(selectedFolder, "mod"))
-                        throw new IOException("Failed to generate addon pak file!");
+        public void CloseLoginOverlay() {
+            Controls.Remove(loginOverlayPanel);
+        }
 
-                    // TODO: Make this asyncronous
-                    if (!PakManager.GenerateUninstallPakFile(installationPathComboBox.Text + @"\game_pak", filePaths.ToArray(), "default"))
-                        throw new IOException("Failed to generate uninstall pak file!");
-
-                    // TODO: Make a function to load these names so we don't have different scripts directly referencing them by string
-                    string[] addonFiles = new string[3] {
-                        FileUtil.TempFilePath() + "addon.json",
-                        FileUtil.TempFilePath() + "mod.pak",
-                        FileUtil.TempFilePath() + "default.pak"
-                    };
-
-                    // Move the addon files into a zip
-                    if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
-                        throw new IOException("Failed to build addon zip file!");
-                } catch (IOException ex) {
-                    if (MessageBox.Show(ex.Message, "Failed to package addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
-                        UploadAddonButtonClick(sender, e);
-                    return;
+        private void UpdateDeveloperButtonState() {
+            if (DeveloperManager.instance.isLoggedIn) {
+                if (DeveloperManager.instance.isDeveloper) {
+                    developerItemToolStripMenuItem.Text = "Upload Addon";
+                    developerItemToolStripMenuItem.Image = Image.FromFile("Resources/cloud_upload.png");
+                    developerItemToolStripMenuItem.Enabled = true;
+                } else {
+                    developerItemToolStripMenuItem.Text = "No Access!";
+                    developerItemToolStripMenuItem.Image = Image.FromFile("Resources/lock.png");
+                    developerItemToolStripMenuItem.Enabled = false;
                 }
-
-                AddonDataManager.instance.UploadAddonToServer(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
-
-                // Cleanup the json file
-                File.Delete(jsonPath);
-
-                // Cleanup the pak files
-                File.Delete(FileUtil.TempFilePath() + "mod.pak");
-                File.Delete(FileUtil.TempFilePath() + "default.pak");
-
-                // Cleanup the zip file
-                File.Delete(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
-
-                AddonDataManager.instance.ReloadAddonsFromDataSources();
+            } else {
+                developerItemToolStripMenuItem.Text = "Developer Login";
+                developerItemToolStripMenuItem.Image = Image.FromFile("Resources/lock.png");
+                developerItemToolStripMenuItem.Enabled = true;
             }
         }
 
@@ -342,8 +350,12 @@ namespace Archeage_Addon_Manager {
             }
         }
 
-        private void button1_Click(object sender, EventArgs e) {
+        private void CloseButtonClick(object sender, EventArgs e) {
             Environment.Exit(0);
+        }
+
+        private void MinimiseButtonClick(object sender, EventArgs e) {
+            this.WindowState = FormWindowState.Minimized;
         }
     }
 }

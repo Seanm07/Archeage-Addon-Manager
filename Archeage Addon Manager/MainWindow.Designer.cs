@@ -37,12 +37,14 @@
             manageAddonSourcesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             developersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            uploadAddonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            developerItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             windowDragPanel = new System.Windows.Forms.Panel();
+            button2 = new System.Windows.Forms.Button();
             button1 = new System.Windows.Forms.Button();
             label2 = new System.Windows.Forms.Label();
+            statusPanel = new System.Windows.Forms.Panel();
             panel2.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
@@ -83,7 +85,6 @@
             panel2.Controls.Add(label1);
             panel2.Controls.Add(installationPathComboBox);
             panel2.Controls.Add(InstallButton);
-            panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             panel2.Location = new System.Drawing.Point(0, 397);
             panel2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panel2.Name = "panel2";
@@ -95,7 +96,7 @@
             label1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             label1.AutoSize = true;
             label1.ForeColor = System.Drawing.Color.White;
-            label1.Location = new System.Drawing.Point(30, 16);
+            label1.Location = new System.Drawing.Point(13, 16);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(101, 15);
@@ -122,7 +123,7 @@
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
             menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            menuStrip1.Size = new System.Drawing.Size(287, 24);
+            menuStrip1.Size = new System.Drawing.Size(167, 24);
             menuStrip1.TabIndex = 4;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -153,20 +154,20 @@
             // developersToolStripMenuItem
             // 
             developersToolStripMenuItem.BackColor = System.Drawing.Color.Transparent;
-            developersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { uploadAddonToolStripMenuItem });
+            developersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { developerItemToolStripMenuItem });
             developersToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             developersToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             developersToolStripMenuItem.Name = "developersToolStripMenuItem";
             developersToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
             developersToolStripMenuItem.Text = "Developers";
             // 
-            // uploadAddonToolStripMenuItem
+            // developerItemToolStripMenuItem
             // 
-            uploadAddonToolStripMenuItem.Image = Properties.Resources.cloud_upload;
-            uploadAddonToolStripMenuItem.Name = "uploadAddonToolStripMenuItem";
-            uploadAddonToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-            uploadAddonToolStripMenuItem.Text = "Upload Addon";
-            uploadAddonToolStripMenuItem.Click += UploadAddonButtonClick;
+            developerItemToolStripMenuItem.Image = Properties.Resources._lock;
+            developerItemToolStripMenuItem.Name = "developerItemToolStripMenuItem";
+            developerItemToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            developerItemToolStripMenuItem.Text = "Developer Login";
+            developerItemToolStripMenuItem.Click += DeveloperActionButtonClick;
             // 
             // helpToolStripMenuItem
             // 
@@ -181,13 +182,14 @@
             // 
             creditsToolStripMenuItem.Image = Properties.Resources.about;
             creditsToolStripMenuItem.Name = "creditsToolStripMenuItem";
-            creditsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            creditsToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             creditsToolStripMenuItem.Text = "About";
             creditsToolStripMenuItem.Click += ShowAboutDialog;
             // 
             // windowDragPanel
             // 
             windowDragPanel.BackColor = System.Drawing.Color.Transparent;
+            windowDragPanel.Controls.Add(button2);
             windowDragPanel.Controls.Add(button1);
             windowDragPanel.Controls.Add(menuStrip1);
             windowDragPanel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -200,28 +202,59 @@
             windowDragPanel.MouseMove += windowDragPanel_MouseMove;
             windowDragPanel.MouseUp += windowDragPanel_MouseUp;
             // 
+            // button2
+            // 
+            button2.FlatAppearance.BorderSize = 0;
+            button2.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
+            button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            button2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            button2.ForeColor = System.Drawing.Color.White;
+            button2.Location = new System.Drawing.Point(500, 0);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(60, 28);
+            button2.TabIndex = 6;
+            button2.Text = "-";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += MinimiseButtonClick;
+            // 
             // button1
             // 
             button1.FlatAppearance.BorderSize = 0;
+            button1.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
+            button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
             button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             button1.ForeColor = System.Drawing.Color.White;
-            button1.Location = new System.Drawing.Point(559, 0);
+            button1.Location = new System.Drawing.Point(560, 0);
             button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(60, 30);
+            button1.Size = new System.Drawing.Size(60, 28);
             button1.TabIndex = 5;
             button1.Text = "X";
             button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            button1.Click += CloseButtonClick;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(62, 273);
+            label2.BackColor = System.Drawing.Color.Transparent;
+            label2.ForeColor = System.Drawing.Color.White;
+            label2.Location = new System.Drawing.Point(100, 248);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(104, 30);
+            label2.Size = new System.Drawing.Size(26, 15);
             label2.TabIndex = 6;
-            label2.Text = "Current loading\r\naction shown here";
+            label2.Text = "Idle";
+            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // statusPanel
+            // 
+            statusPanel.BackColor = System.Drawing.Color.Transparent;
+            statusPanel.BackgroundImage = Properties.Resources.daru_green;
+            statusPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            statusPanel.Location = new System.Drawing.Point(2, 296);
+            statusPanel.Name = "statusPanel";
+            statusPanel.Size = new System.Drawing.Size(140, 113);
+            statusPanel.TabIndex = 7;
             // 
             // MainWindow
             // 
@@ -234,6 +267,7 @@
             Controls.Add(windowDragPanel);
             Controls.Add(panel1);
             Controls.Add(panel2);
+            Controls.Add(statusPanel);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;
@@ -267,11 +301,13 @@
         private System.Windows.Forms.ToolStripMenuItem creditsToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem developersToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem uploadAddonToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem developerItemToolStripMenuItem;
         private System.Windows.Forms.ComboBox installationPathComboBox;
         private System.Windows.Forms.Panel windowDragPanel;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Panel statusPanel;
+        private System.Windows.Forms.Button button2;
     }
 }
 
