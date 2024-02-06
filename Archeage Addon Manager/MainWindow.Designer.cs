@@ -29,7 +29,8 @@
         private void InitializeComponent() {
             InstallButton = new System.Windows.Forms.Button();
             panel1 = new System.Windows.Forms.Panel();
-            panel2 = new System.Windows.Forms.Panel();
+            bottomPanel = new System.Windows.Forms.Panel();
+            label2 = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             installationPathComboBox = new System.Windows.Forms.ComboBox();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -41,13 +42,14 @@
             helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             windowDragPanel = new System.Windows.Forms.Panel();
-            button2 = new System.Windows.Forms.Button();
-            button1 = new System.Windows.Forms.Button();
-            label2 = new System.Windows.Forms.Label();
+            minimiseWindowButton = new System.Windows.Forms.Button();
+            closeWindowButton = new System.Windows.Forms.Button();
+            containerPanel = new System.Windows.Forms.Panel();
             statusPanel = new System.Windows.Forms.Panel();
-            panel2.SuspendLayout();
+            bottomPanel.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
+            containerPanel.SuspendLayout();
             SuspendLayout();
             // 
             // InstallButton
@@ -56,8 +58,8 @@
             InstallButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             InstallButton.FlatAppearance.BorderSize = 0;
             InstallButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            InstallButton.Font = new System.Drawing.Font("Philosopher", 14.2499981F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            InstallButton.ForeColor = System.Drawing.Color.FromArgb(154, 161, 175);
+            InstallButton.Font = new System.Drawing.Font("Ebrima", 13F, System.Drawing.FontStyle.Bold);
+            InstallButton.ForeColor = System.Drawing.Color.White;
             InstallButton.Location = new System.Drawing.Point(466, 11);
             InstallButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             InstallButton.Name = "InstallButton";
@@ -73,28 +75,42 @@
             panel1.AutoScroll = true;
             panel1.BackColor = System.Drawing.Color.Transparent;
             panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            panel1.Location = new System.Drawing.Point(227, 45);
+            panel1.Location = new System.Drawing.Point(10, 10);
             panel1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(376, 332);
+            panel1.Size = new System.Drawing.Size(370, 328);
             panel1.TabIndex = 2;
             // 
-            // panel2
+            // bottomPanel
             // 
-            panel2.BackColor = System.Drawing.Color.Transparent;
-            panel2.Controls.Add(label1);
-            panel2.Controls.Add(installationPathComboBox);
-            panel2.Controls.Add(InstallButton);
-            panel2.Location = new System.Drawing.Point(0, 397);
-            panel2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panel2.Name = "panel2";
-            panel2.Size = new System.Drawing.Size(620, 83);
-            panel2.TabIndex = 3;
+            bottomPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            bottomPanel.Controls.Add(label2);
+            bottomPanel.Controls.Add(label1);
+            bottomPanel.Controls.Add(installationPathComboBox);
+            bottomPanel.Controls.Add(InstallButton);
+            bottomPanel.Location = new System.Drawing.Point(0, 397);
+            bottomPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            bottomPanel.Name = "bottomPanel";
+            bottomPanel.Size = new System.Drawing.Size(620, 83);
+            bottomPanel.TabIndex = 3;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.BackColor = System.Drawing.Color.Transparent;
+            label2.ForeColor = System.Drawing.Color.White;
+            label2.Location = new System.Drawing.Point(166, 11);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(26, 15);
+            label2.TabIndex = 6;
+            label2.Text = "Idle";
+            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label1
             // 
             label1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             label1.AutoSize = true;
+            label1.BackColor = System.Drawing.Color.Transparent;
             label1.ForeColor = System.Drawing.Color.White;
             label1.Location = new System.Drawing.Point(13, 16);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -121,9 +137,9 @@
             menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, developersToolStripMenuItem, helpToolStripMenuItem });
             menuStrip1.Location = new System.Drawing.Point(-1, 2);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            menuStrip1.Padding = new System.Windows.Forms.Padding(5, 3, 0, 2);
             menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            menuStrip1.Size = new System.Drawing.Size(167, 24);
+            menuStrip1.Size = new System.Drawing.Size(165, 24);
             menuStrip1.TabIndex = 4;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -134,7 +150,7 @@
             fileToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             fileToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            fileToolStripMenuItem.Size = new System.Drawing.Size(37, 19);
             fileToolStripMenuItem.Text = "File";
             // 
             // manageAddonSourcesToolStripMenuItem
@@ -158,7 +174,7 @@
             developersToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             developersToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             developersToolStripMenuItem.Name = "developersToolStripMenuItem";
-            developersToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
+            developersToolStripMenuItem.Size = new System.Drawing.Size(77, 19);
             developersToolStripMenuItem.Text = "Developers";
             // 
             // developerItemToolStripMenuItem
@@ -175,7 +191,7 @@
             helpToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             helpToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            helpToolStripMenuItem.Size = new System.Drawing.Size(44, 19);
             helpToolStripMenuItem.Text = "Help";
             // 
             // creditsToolStripMenuItem
@@ -188,9 +204,9 @@
             // 
             // windowDragPanel
             // 
-            windowDragPanel.BackColor = System.Drawing.Color.Transparent;
-            windowDragPanel.Controls.Add(button2);
-            windowDragPanel.Controls.Add(button1);
+            windowDragPanel.BackColor = System.Drawing.Color.FromArgb(100, 0, 0, 0);
+            windowDragPanel.Controls.Add(minimiseWindowButton);
+            windowDragPanel.Controls.Add(closeWindowButton);
             windowDragPanel.Controls.Add(menuStrip1);
             windowDragPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             windowDragPanel.Location = new System.Drawing.Point(0, 0);
@@ -202,49 +218,48 @@
             windowDragPanel.MouseMove += windowDragPanel_MouseMove;
             windowDragPanel.MouseUp += windowDragPanel_MouseUp;
             // 
-            // button2
+            // minimiseWindowButton
             // 
-            button2.FlatAppearance.BorderSize = 0;
-            button2.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
-            button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
-            button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            button2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            button2.ForeColor = System.Drawing.Color.White;
-            button2.Location = new System.Drawing.Point(500, 0);
-            button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(60, 28);
-            button2.TabIndex = 6;
-            button2.Text = "-";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += MinimiseButtonClick;
+            minimiseWindowButton.BackColor = System.Drawing.Color.Transparent;
+            minimiseWindowButton.FlatAppearance.BorderSize = 0;
+            minimiseWindowButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
+            minimiseWindowButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            minimiseWindowButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            minimiseWindowButton.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            minimiseWindowButton.ForeColor = System.Drawing.Color.White;
+            minimiseWindowButton.Location = new System.Drawing.Point(500, 0);
+            minimiseWindowButton.Name = "minimiseWindowButton";
+            minimiseWindowButton.Size = new System.Drawing.Size(60, 30);
+            minimiseWindowButton.TabIndex = 6;
+            minimiseWindowButton.Text = "-";
+            minimiseWindowButton.UseVisualStyleBackColor = false;
+            minimiseWindowButton.Click += MinimiseButtonClick;
             // 
-            // button1
+            // closeWindowButton
             // 
-            button1.FlatAppearance.BorderSize = 0;
-            button1.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
-            button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
-            button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            button1.ForeColor = System.Drawing.Color.White;
-            button1.Location = new System.Drawing.Point(560, 0);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(60, 28);
-            button1.TabIndex = 5;
-            button1.Text = "X";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += CloseButtonClick;
+            closeWindowButton.BackColor = System.Drawing.Color.Transparent;
+            closeWindowButton.FlatAppearance.BorderSize = 0;
+            closeWindowButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(33, 35, 38);
+            closeWindowButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            closeWindowButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            closeWindowButton.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            closeWindowButton.ForeColor = System.Drawing.Color.White;
+            closeWindowButton.Location = new System.Drawing.Point(560, 0);
+            closeWindowButton.Name = "closeWindowButton";
+            closeWindowButton.Size = new System.Drawing.Size(60, 30);
+            closeWindowButton.TabIndex = 5;
+            closeWindowButton.Text = "X";
+            closeWindowButton.UseVisualStyleBackColor = false;
+            closeWindowButton.Click += CloseButtonClick;
             // 
-            // label2
+            // containerPanel
             // 
-            label2.AutoSize = true;
-            label2.BackColor = System.Drawing.Color.Transparent;
-            label2.ForeColor = System.Drawing.Color.White;
-            label2.Location = new System.Drawing.Point(100, 248);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(26, 15);
-            label2.TabIndex = 6;
-            label2.Text = "Idle";
-            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            containerPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            containerPanel.Controls.Add(panel1);
+            containerPanel.Location = new System.Drawing.Point(220, 40);
+            containerPanel.Name = "containerPanel";
+            containerPanel.Size = new System.Drawing.Size(390, 348);
+            containerPanel.TabIndex = 8;
             // 
             // statusPanel
             // 
@@ -263,11 +278,11 @@
             BackgroundImage = Properties.Resources.bg;
             ClientSize = new System.Drawing.Size(620, 480);
             ControlBox = false;
-            Controls.Add(label2);
+            Controls.Add(containerPanel);
             Controls.Add(windowDragPanel);
-            Controls.Add(panel1);
-            Controls.Add(panel2);
+            Controls.Add(bottomPanel);
             Controls.Add(statusPanel);
+            DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;
@@ -278,21 +293,21 @@
             ShowIcon = false;
             SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             Text = "Archeage Addon Manager";
-            panel2.ResumeLayout(false);
-            panel2.PerformLayout();
+            bottomPanel.ResumeLayout(false);
+            bottomPanel.PerformLayout();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             windowDragPanel.ResumeLayout(false);
             windowDragPanel.PerformLayout();
+            containerPanel.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
         private System.Windows.Forms.Button InstallButton;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
@@ -304,10 +319,11 @@
         private System.Windows.Forms.ToolStripMenuItem developerItemToolStripMenuItem;
         private System.Windows.Forms.ComboBox installationPathComboBox;
         private System.Windows.Forms.Panel windowDragPanel;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button closeWindowButton;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel statusPanel;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button minimiseWindowButton;
+        private System.Windows.Forms.Panel containerPanel;
     }
 }
 

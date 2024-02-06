@@ -7,7 +7,6 @@ using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
-        // TODO: Probably move this to a separate script
         public class ToolstripRenderer : ToolStripProfessionalRenderer {
 
             // Override the system default menu item background rendering
@@ -247,7 +246,7 @@ namespace Archeage_Addon_Manager {
         }
 
         private void DeveloperActionButtonClick(object sender, EventArgs e) {
-            if(DeveloperManager.instance.isLoggedIn) {
+            if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
                     DeveloperManager.instance.UploadAddonButtonClick(installationPathComboBox.Text);
                 } else {
@@ -259,39 +258,87 @@ namespace Archeage_Addon_Manager {
         }
 
         private Panel loginOverlayPanel;
-        private TextBox loginOverlayTextbox;
-        private Button loginOverlayButton;
 
         public void DisplayLoginOverlay() {
             loginOverlayPanel = new Panel() {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(200, 33, 35, 38),
+                BackColor = Color.FromArgb(240, 33, 35, 38)
             };
 
-            loginOverlayTextbox = new TextBox() {
-                Width = 200,
+            Label titleLabel = new Label() {
+                Width = 400,
                 Height = 20,
-                Location = new Point((this.Width / 2) - 100, (this.Height / 2) - 10),
-                Text = "Enter code after authorising discord"
+                Location = new Point((this.Width - 400) / 2, (this.Height - 10) / 2 - 50),
+                Text = "Discord Authorisation Required!",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
             };
 
-            loginOverlayButton = new Button() {
-                Width = 200,
+            Label infoLabel = new Label() {
+                Width = 400,
                 Height = 20,
-                Location = new Point((this.Width / 2) - 100, (this.Height / 2) + 10),
+                Location = new Point((this.Width - 400) / 2, (this.Height - 20) / 2 - 30),
+                Text = "Authorise discord in your browser then copy the code below",
+                TextAlign = ContentAlignment.MiddleCenter,
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            TextBox loginOverlayTextbox = new TextBox() {
+                Width = 400,
+                Height = 20,
+                Location = new Point((this.Width - 400) / 2, (this.Height - 20) / 2),
+                Text = "",
+                TextAlign = HorizontalAlignment.Center
+            };
+
+            Button loginButton = new Button() {
+                Width = 100,
+                Height = 30,
+                Location = new Point((this.Width - 400) / 2 + 400 - 100, (this.Height - 20) / 2 + 30),
                 Text = "Link to Discord",
-                BackColor = Color.FromArgb(255, 255, 255),
+                BackColor = Color.FromArgb(88, 101, 242),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+
+            Button cancelButton = new Button() {
+                Width = 100,
+                Height = 30,
+                Location = new Point((this.Width - 400) / 2, (this.Height - 20) / 2 + 30),
+                Text = "Cancel",
+                BackColor = Color.Transparent,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
             };
 
             Controls.Add(loginOverlayPanel);
+            loginOverlayPanel.Controls.Add(titleLabel);
+            loginOverlayPanel.Controls.Add(infoLabel);
             loginOverlayPanel.Controls.Add(loginOverlayTextbox);
-            loginOverlayPanel.Controls.Add(loginOverlayButton);
+            loginOverlayPanel.Controls.Add(loginButton);
+            loginOverlayPanel.Controls.Add(cancelButton);
 
             loginOverlayPanel.BringToFront();
+            BringMenuBarToFront();
 
-            loginOverlayButton.Click += (sender, e) => {
+            loginButton.Click += (sender, e) => {
                 DeveloperManager.instance.LoginLinkButtonConfirm(loginOverlayTextbox.Text);
             };
+
+            cancelButton.Click += (sender, e) => {
+                CloseLoginOverlay();
+            };
+        }
+
+        public void BringMenuBarToFront() {
+            windowDragPanel.BringToFront();
+            menuStrip1.BringToFront();
+            closeWindowButton.BringToFront();
+            minimiseWindowButton.BringToFront();
+
         }
 
         public void CloseLoginOverlay() {
