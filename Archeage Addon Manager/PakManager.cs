@@ -2,6 +2,10 @@
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Net;
 
 namespace Archeage_Addon_Manager {
     public class PakManager {
@@ -152,6 +156,53 @@ namespace Archeage_Addon_Manager {
             XLPack.DestroyFileSystem();
 
             return pakInstalled;
+        }
+
+        public static async void InstallSelectedAddons(string installationPath) {
+            // Get the list of addon widgets from the main window
+            List<MainWindow.AddonWidget> addonWidgets = MainWindow.instance.addonWidgets;
+
+            // Create a list of all the scripts which will be updated
+            List<string> scriptsPendingUpdate = new List<string>();
+
+            // Check if any of the files in the addons are duplicates of another selected addon
+            for (int i = 0; i < addonWidgets.Count; i++) {
+                // If the addon is not selected, skip it
+                if (!addonWidgets[i].checkbox.Checked) continue;
+
+                // Add all files modified by this addon to the scripts pending update list
+                foreach (AddonFileInfo fileInfo in AddonDataManager.instance.addons[i].fileInfos)
+                    scriptsPendingUpdate.Add(fileInfo.filepath);
+            }
+
+            // Check for any duplicates in the list of scripts pending update (converting to hash set removes duplicates)
+            if (scriptsPendingUpdate.Count != scriptsPendingUpdate.ToHashSet().Count()) {
+                MessageBox.Show("Two or more selected addons attempt to modify the same scripts so cannot be installed together.", "Conflicting addons selected!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // TODO: Show loading screen "downloading file 0 of addonWidgets.Count"
+
+            for (int i = 0; i < addonWidgets.Count; i++) {
+                if (addonWidgets[i].checkbox.Checked) {
+                    // Download file from https://www.spacemeat.space/aamods/data/addon.zip into FileUtil.TempFilePath()
+                    string addonUrl = "https://www.spacemeat.space/aamods/data/" + AddonDataManager.instance.addons[i].packagedFileName + ".zip";
+                    string zipPath = FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + ".zip";
+
+                    // TODO: Update loading screen "downloading file i of addonWidgets.Count"
+                    // may need to yield a frame, I don't fully understand awaits vs coroutines yet
+
+                    WebRequest webRequest = new WebRequest();
+                    await webRequest.DownloadFile(addonUrl, zipPath);
+
+                    // Extract mod.zip from the zip file into FileUtil.TempFilePath() then delete the zip
+                    FileUtil.ExtractZipFile(zipPath, FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName);
+                    File.Delete(zipPath);
+
+                    MessageBox.Show("Beginning " + addonWidgets[i].titleLabel.Text + " installation!", "Press ok to begin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    InstallPakFile(installationPath + @"\game_pak", FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + @"\mod.pak");
+                }
+            }
         }
     }
 }
