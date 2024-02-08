@@ -30,7 +30,6 @@
             InstallButton = new System.Windows.Forms.Button();
             panel1 = new System.Windows.Forms.Panel();
             bottomPanel = new System.Windows.Forms.Panel();
-            label2 = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             installationPathComboBox = new System.Windows.Forms.ComboBox();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -54,16 +53,16 @@
             // 
             // InstallButton
             // 
-            InstallButton.BackColor = System.Drawing.Color.FromArgb(53, 57, 62);
+            InstallButton.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
             InstallButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             InstallButton.FlatAppearance.BorderSize = 0;
             InstallButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             InstallButton.Font = new System.Drawing.Font("Ebrima", 13F, System.Drawing.FontStyle.Bold);
             InstallButton.ForeColor = System.Drawing.Color.White;
-            InstallButton.Location = new System.Drawing.Point(466, 11);
+            InstallButton.Location = new System.Drawing.Point(479, 0);
             InstallButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             InstallButton.Name = "InstallButton";
-            InstallButton.Size = new System.Drawing.Size(137, 60);
+            InstallButton.Size = new System.Drawing.Size(141, 80);
             InstallButton.TabIndex = 0;
             InstallButton.Text = "APPLY\r\nPATCHES";
             InstallButton.UseVisualStyleBackColor = false;
@@ -84,7 +83,6 @@
             // bottomPanel
             // 
             bottomPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
-            bottomPanel.Controls.Add(label2);
             bottomPanel.Controls.Add(label1);
             bottomPanel.Controls.Add(installationPathComboBox);
             bottomPanel.Controls.Add(InstallButton);
@@ -93,18 +91,6 @@
             bottomPanel.Name = "bottomPanel";
             bottomPanel.Size = new System.Drawing.Size(620, 83);
             bottomPanel.TabIndex = 3;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.BackColor = System.Drawing.Color.Transparent;
-            label2.ForeColor = System.Drawing.Color.White;
-            label2.Location = new System.Drawing.Point(166, 11);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(26, 15);
-            label2.TabIndex = 6;
-            label2.Text = "Idle";
-            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label1
             // 
@@ -123,10 +109,10 @@
             // 
             installationPathComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             installationPathComboBox.FormattingEnabled = true;
-            installationPathComboBox.Location = new System.Drawing.Point(13, 43);
+            installationPathComboBox.Location = new System.Drawing.Point(10, 48);
             installationPathComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             installationPathComboBox.Name = "installationPathComboBox";
-            installationPathComboBox.Size = new System.Drawing.Size(441, 23);
+            installationPathComboBox.Size = new System.Drawing.Size(458, 23);
             installationPathComboBox.TabIndex = 2;
             // 
             // menuStrip1
@@ -320,7 +306,6 @@
         private System.Windows.Forms.ComboBox installationPathComboBox;
         private System.Windows.Forms.Panel windowDragPanel;
         private System.Windows.Forms.Button closeWindowButton;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Button minimiseWindowButton;
         private System.Windows.Forms.Panel containerPanel;

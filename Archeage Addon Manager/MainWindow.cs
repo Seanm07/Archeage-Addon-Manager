@@ -1,29 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
     public partial class MainWindow : Form {
-        public class AddonWidget {
-            public CheckBox checkbox { get; set; }
-            public Label titleLabel { get; set; }
-            public Label descriptionLabel { get; set; }
-        }
+
 
         public static MainWindow instance;
 
-        public List<AddonWidget> addonWidgets = new List<AddonWidget>();
-
         private Panel? loginOverlayPanel;
+        private Panel? loadingOverlayPanel;
 
         public MainWindow() {
             instance ??= this;
 
             InitializeComponent();
+
+            // Initialise the AddonDataManager
+            new AddonDataManager(panel1);
 
             // Use our custom renderer for the menu strip
             menuStrip1.Renderer = new ToolstripRenderer();
@@ -44,123 +38,20 @@ namespace Archeage_Addon_Manager {
         }
 
         public void OnClickAddonWidget(int addonIndex) {
-            addonWidgets[addonIndex].checkbox.Checked = !addonWidgets[addonIndex].checkbox.Checked;
+            AddonDataManager.instance.ToggleAddonWidgetChecked(addonIndex);
 
             OnCheckboxesUpdated();
         }
 
         public void OnCheckboxesUpdated() {
-            int totalChecked = 0;
-
-            for (int i = 0; i < addonWidgets.Count; i++) {
-                if (addonWidgets[i].checkbox.Checked) {
-                    totalChecked++;
-                }
-            }
+            int totalChecked = AddonDataManager.instance.GetCheckedAddonWidgetCount();
 
             label1.Text = totalChecked + " addon" + (totalChecked > 1 ? "s" : "") + " selected";
         }
 
         public void ClearAddonWidgets() {
             panel1.Controls.Clear();
-            addonWidgets.Clear();
-        }
-
-        // Visually display a widget for an addon in the addon list panel
-        public void AddAddonWidget(AddonDataManager.AddonData addonData) {
-            // Create a horizontal group to contain each addon
-            FlowLayoutPanel horizontalGroup = new FlowLayoutPanel() {
-                Dock = DockStyle.Top,
-                Width = panel1.Width - SystemInformation.VerticalScrollBarWidth,
-                AutoSize = true,
-                BackColor = Color.FromArgb(33, 35, 38),
-            };
-
-            // Container for the checkbox so we can center it
-            FlowLayoutPanel checkboxGroup = new FlowLayoutPanel() {
-                Dock = DockStyle.Left,
-                Width = 30,
-                Margin = new Padding(0, 0, 0, 0)
-            };
-
-            // Create a checkbox to select the addon for installation or to show already installed
-            CheckBox addonCheckbox = new CheckBox() {
-                Width = 15,
-                AutoCheck = false
-            };
-
-            // Add the checkbox to the checkboxGroup group
-            checkboxGroup.Controls.Add(addonCheckbox);
-
-            // Group to contain right side text labels
-            FlowLayoutPanel textGroup = new FlowLayoutPanel() {
-                Width = horizontalGroup.Width - checkboxGroup.Width,
-                Height = 50 + ((addonData.description.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
-                Margin = new Padding(0, 0, 0, 0)
-            };
-
-            // Title label which contains addon name, version and author
-            Label titleLabel = new Label() {
-                Width = textGroup.Width,
-                Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                Text = addonData.name + " - v" + addonData.version + " by " + addonData.author,
-                Margin = new Padding(0, 5, 0, 0),
-                ForeColor = Color.White
-            };
-
-            // Description label displayed below the title label
-            Label descriptionLabel = new Label() {
-                Width = textGroup.Width,
-                AutoSize = true,
-                Text = addonData.description,
-                Margin = new Padding(0, 0, 0, 0),
-                ForeColor = Color.White
-            };
-
-            // Add the title and description labels to the right side text group
-            textGroup.Controls.Add(titleLabel);
-            textGroup.Controls.Add(descriptionLabel);
-
-            // Add the left side checkboxGroup and right side textGroup to the horizontal group
-            horizontalGroup.Controls.Add(checkboxGroup);
-            horizontalGroup.Controls.Add(textGroup);
-
-            // Create a spacer to separate each addon with a visual spacer
-            FlowLayoutPanel spacerPanel = new FlowLayoutPanel() {
-                Dock = DockStyle.Top,
-                Width = panel1.Width - SystemInformation.VerticalScrollBarWidth,
-                Height = 1,
-                BackColor = Color.FromArgb(21, 23, 26)
-            };
-
-            // Controls added to the panel are added bottom to top based on the top dock style
-            // Add the spacer to the panel
-            panel1.Controls.Add(spacerPanel);
-
-            // Add the horizontal group to the panel
-            panel1.Controls.Add(horizontalGroup);
-
-            // Vertically center the checkbox
-            int verticalMargin = (checkboxGroup.Height - addonCheckbox.Height) / 2;
-            int horizontalMargin = (checkboxGroup.Width - addonCheckbox.Width) / 2;
-            addonCheckbox.Margin = new Padding(horizontalMargin, verticalMargin, horizontalMargin, verticalMargin);
-
-            int curId = addonWidgets.Count;
-
-            // Register click events on all controls so clicking anything checks/unchecks the checkbox
-            horizontalGroup.Click += (sender, e) => OnClickAddonWidget(curId);
-            checkboxGroup.Click += (sender, e) => OnClickAddonWidget(curId);
-            addonCheckbox.Click += (sender, e) => OnClickAddonWidget(curId);
-            textGroup.Click += (sender, e) => OnClickAddonWidget(curId);
-            titleLabel.Click += (sender, e) => OnClickAddonWidget(curId);
-            descriptionLabel.Click += (sender, e) => OnClickAddonWidget(curId);
-
-            // Cache the addonWidgets in a list for easier referencing
-            addonWidgets.Add(new AddonWidget() {
-                checkbox = addonCheckbox,
-                titleLabel = titleLabel,
-                descriptionLabel = descriptionLabel
-            });
+            AddonDataManager.instance.addonWidgets.Clear();
         }
 
         public void ShowAboutDialog(object sender, EventArgs e) {
@@ -177,6 +68,52 @@ namespace Archeage_Addon_Manager {
             } else {
                 DeveloperManager.instance.LoginButtonClick();
             }
+        }
+
+        public void DisplayLoadingOverlay(string loadingText, string subLoadingText) {
+            if (loadingOverlayPanel == null) {
+                loadingOverlayPanel = new Panel() {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.FromArgb(240, 33, 35, 38)
+                };
+
+                Label loadingLabel = new Label() {
+                    Width = this.Width,
+                    Height = 25,
+                    Location = new Point(0, (this.Height - 25) / 2 - 35),
+                    Text = loadingText,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Microsoft Sans Serif", 16, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = Color.Transparent
+                };
+
+                Label subLoadingLabel = new Label() {
+                    Width = this.Width,
+                    Height = 20,
+                    Location = new Point(0, (this.Height - 20) / 2),
+                    Text = subLoadingText,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Microsoft Sans Serif", 10, FontStyle.Regular),
+                    ForeColor = Color.White,
+                    BackColor = Color.Transparent
+                };
+
+                Controls.Add(loadingOverlayPanel);
+                loadingOverlayPanel.Controls.Add(loadingLabel);
+                loadingOverlayPanel.Controls.Add(subLoadingLabel);
+
+                loadingOverlayPanel.BringToFront();
+                BringMenuBarToFront();
+            } else {
+                loadingOverlayPanel.Controls[0].Text = loadingText;
+                loadingOverlayPanel.Controls[1].Text = subLoadingText;
+            }
+        }
+
+        public void CloseLoadingOverlay() {
+            Controls.Remove(loadingOverlayPanel);
+            loadingOverlayPanel = null;
         }
 
         public void DisplayLoginOverlay() {
@@ -263,6 +200,7 @@ namespace Archeage_Addon_Manager {
 
         public void CloseLoginOverlay() {
             Controls.Remove(loginOverlayPanel);
+            loginOverlayPanel = null;
         }
 
         private void UpdateDeveloperButtonState() {

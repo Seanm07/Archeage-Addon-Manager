@@ -19,9 +19,6 @@ namespace Archeage_Addon_Manager
             if(!Directory.Exists(FileUtil.TempFilePath()))
                 Directory.CreateDirectory(FileUtil.TempFilePath());
 
-            // Initialise our AddonDataManager
-            new AddonDataManager();
-
             new DeveloperManager();
 
             Application.Run(new MainWindow());            

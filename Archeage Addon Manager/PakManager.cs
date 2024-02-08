@@ -160,7 +160,9 @@ namespace Archeage_Addon_Manager {
 
         public static async void InstallSelectedAddons(string installationPath) {
             // Get the list of addon widgets from the main window
-            List<MainWindow.AddonWidget> addonWidgets = MainWindow.instance.addonWidgets;
+            List<AddonDataManager.AddonWidget> addonWidgets = AddonDataManager.instance.addonWidgets;
+
+            int selectedAddons = addonWidgets.Count(widget => widget.checkbox.Checked);
 
             // Create a list of all the scripts which will be updated
             List<string> scriptsPendingUpdate = new List<string>();
@@ -181,28 +183,35 @@ namespace Archeage_Addon_Manager {
                 return;
             }
 
-            // TODO: Show loading screen "downloading file 0 of addonWidgets.Count"
+            int curAddon = 1;
+
+            MainWindow.instance.DisplayLoadingOverlay("Installing addon " + curAddon + " of " + selectedAddons + "..", "");
 
             for (int i = 0; i < addonWidgets.Count; i++) {
                 if (addonWidgets[i].checkbox.Checked) {
-                    // Download file from https://www.spacemeat.space/aamods/data/addon.zip into FileUtil.TempFilePath()
                     string addonUrl = "https://www.spacemeat.space/aamods/data/" + AddonDataManager.instance.addons[i].packagedFileName + ".zip";
                     string zipPath = FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + ".zip";
 
-                    // TODO: Update loading screen "downloading file i of addonWidgets.Count"
-                    // may need to yield a frame, I don't fully understand awaits vs coroutines yet
+                    MainWindow.instance.DisplayLoadingOverlay("Installing addon " + curAddon + " of " + selectedAddons + "..", "Downloading " + Path.GetFileName(zipPath));
 
                     WebRequest webRequest = new WebRequest();
                     await webRequest.DownloadFile(addonUrl, zipPath);
+
+                    MainWindow.instance.DisplayLoadingOverlay("Installing addon " + curAddon + " of " + selectedAddons + "..", "Extracting " + Path.GetFileName(zipPath));
 
                     // Extract mod.zip from the zip file into FileUtil.TempFilePath() then delete the zip
                     FileUtil.ExtractZipFile(zipPath, FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName);
                     File.Delete(zipPath);
 
-                    MessageBox.Show("Beginning " + addonWidgets[i].titleLabel.Text + " installation!", "Press ok to begin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MainWindow.instance.DisplayLoadingOverlay("Installing addon " + curAddon + " of " + selectedAddons + "..", "Patching " + Path.GetFileNameWithoutExtension(zipPath) + " to game client");
+
                     InstallPakFile(installationPath + @"\game_pak", FileUtil.TempFilePath() + AddonDataManager.instance.addons[i].packagedFileName + @"\mod.pak");
+
+                    curAddon++;
                 }
             }
+
+            MainWindow.instance.CloseLoadingOverlay();
         }
     }
 }
