@@ -268,7 +268,6 @@
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
             Controls.Add(statusPanel);
-            DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;

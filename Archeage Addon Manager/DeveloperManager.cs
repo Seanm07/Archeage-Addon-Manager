@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace Archeage_Addon_Manager {
     internal class DeveloperManager {
@@ -28,10 +29,16 @@ namespace Archeage_Addon_Manager {
         public void LoginLinkButtonConfirm(string discordLinkCode) {
             MainWindow.instance.CloseLoginOverlay();
 
-            MessageBox.Show("TODO auth discord with code " + discordLinkCode, "TODO");
+            MessageBox.Show("TODO auth discord with code " + discordLinkCode + " for now we're logging you in as a developer for testing", "TODO");
+            
+            // TODO: This is temporary for testing, remove this when the discord auth is implemented
+            isLoggedIn = true;
+            isDeveloper = true;
+
+            MainWindow.instance.UpdateDeveloperButtonState();
         }
 
-        public void UploadAddonButtonClick(string installationPath) {
+        public async void UploadAddonButtonClick(string installationPath) {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
                 Description = "Select root directory of addon source"
             };
@@ -55,20 +62,21 @@ namespace Archeage_Addon_Manager {
 
                 MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
 
+                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Generating " + addonInfo.packagedFileName + " pak");
+                await Task.Delay(1); // Wait a frame to allow the loading overlay to display before the pak generation begins
+
                 try {
                     if (!PakManager.GeneratePakFile(selectedFolder, "mod"))
                         throw new IOException("Failed to generate addon pak file!");
 
-                    // TODO: Make this asyncronous
                     if (!PakManager.GenerateUninstallPakFile(installationPath + @"\game_pak", filePaths.ToArray(), "default"))
                         throw new IOException("Failed to generate uninstall pak file!");
 
-                    // TODO: Make a function to load these names so we don't have different scripts directly referencing them by string
-                    string[] addonFiles = new string[3] {
+                    string[] addonFiles = [
                         FileUtil.TempFilePath() + "addon.json",
                         FileUtil.TempFilePath() + "mod.pak",
                         FileUtil.TempFilePath() + "default.pak"
-                    };
+                    ];
 
                     // Move the addon files into a zip
                     if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
@@ -79,7 +87,13 @@ namespace Archeage_Addon_Manager {
                     return;
                 }
 
-                AddonDataManager.instance.UploadAddonToServer(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
+                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Uploading " + addonInfo.packagedFileName + " to cloud");
+
+                WebRequest webRequest = new WebRequest();
+                await webRequest.UploadZipFile(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
+
+                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Cleaning up temporary files");
+                await Task.Delay(500); // half a second delay so the loading text is readable
 
                 // Cleanup the json file
                 File.Delete(jsonPath);
@@ -92,6 +106,11 @@ namespace Archeage_Addon_Manager {
                 File.Delete(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
 
                 AddonDataManager.instance.ReloadAddonsFromDataSources();
+
+                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Done! " + addonInfo.packagedFileName + " has successfully been published.");
+                await Task.Delay(500); // half a second delay so the loading text is readable
+
+                MainWindow.instance.CloseLoadingOverlay();
             }
         }
 

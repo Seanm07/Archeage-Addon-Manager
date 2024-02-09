@@ -3,9 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
-    public partial class MainWindow : Form {
-
-
+    public partial class MainWindow : CompositedForm {
         public static MainWindow instance;
 
         private Panel? loginOverlayPanel;
@@ -71,6 +69,9 @@ namespace Archeage_Addon_Manager {
         }
 
         public void DisplayLoadingOverlay(string loadingText, string subLoadingText) {
+            // Set the window to a loading state while the loading overlay is displayed
+            this.Cursor = Cursors.WaitCursor;
+
             if (loadingOverlayPanel == null) {
                 loadingOverlayPanel = new Panel() {
                     Dock = DockStyle.Fill,
@@ -114,6 +115,9 @@ namespace Archeage_Addon_Manager {
         public void CloseLoadingOverlay() {
             Controls.Remove(loadingOverlayPanel);
             loadingOverlayPanel = null;
+
+            // Restore default cursor when hiding the loading overlay
+            this.Cursor = Cursors.Default;
         }
 
         public void DisplayLoginOverlay() {
@@ -203,7 +207,7 @@ namespace Archeage_Addon_Manager {
             loginOverlayPanel = null;
         }
 
-        private void UpdateDeveloperButtonState() {
+        public void UpdateDeveloperButtonState() {
             if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
                     developerItemToolStripMenuItem.Text = "Upload Addon";

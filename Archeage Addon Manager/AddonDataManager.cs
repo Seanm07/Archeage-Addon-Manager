@@ -252,41 +252,5 @@ namespace Archeage_Addon_Manager {
 
             return validPaths.ToArray();
         }
-
-        public void UploadAddonToServer(string addonZipPath) {
-            // Use Task.Run to call the async method from a non-async context
-            Task.Run(() => UploadAddonToServerAsync(addonZipPath)).Wait();
-        }
-
-        // TODO: Use a function in WebRequest.cs
-        public async Task UploadAddonToServerAsync(string addonZipPath) {
-            MessageBox.Show("Uploading addon to server...");
-
-            try {
-                using (HttpClient client = new HttpClient()) {
-                    string phpScriptUrl = "https://www.spacemeat.space/aamods/data/upload.php";
-
-                    // Create multipart form content
-                    using (MultipartFormDataContent formData = new MultipartFormDataContent()) {
-                        // Add the ZIP file to the form data
-                        byte[] fileBytes = File.ReadAllBytes(addonZipPath);
-                        formData.Add(new ByteArrayContent(fileBytes), "zip_file", Path.GetFileName(addonZipPath));
-
-                        // Make the POST request
-                        HttpResponseMessage response = await client.PostAsync(phpScriptUrl, formData);
-
-                        // Check the response status
-                        if (response.IsSuccessStatusCode) {
-                            string responseText = await response.Content.ReadAsStringAsync();
-                            MessageBox.Show(responseText);
-                        } else {
-                            MessageBox.Show("Error uploading file: " + response.ReasonPhrase);
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                MessageBox.Show("Error uploading file: " + ex.Message);
-            }
-        }
     }
 }
