@@ -4,6 +4,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using ZstdSharp;
+using ZstdSharp.Unsafe;
 
 namespace Archeage_Addon_Manager {
     internal class DeveloperManager {
@@ -14,6 +16,80 @@ namespace Archeage_Addon_Manager {
 
         public DeveloperManager() {
             instance ??= this;
+        }
+
+        public async Task BackupGamePak(string installationPath) {
+            MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "Compressing backup of game_pak.. (0.00%)");
+            await Task.Delay(1);
+
+            // Compress the file at installationPath + @"\game_pak" using zstandard compression
+            string gamePakPath = installationPath + @"\game_pak";
+            string backupPath = installationPath + @"\game_pak.backup";
+
+            using FileStream input = File.OpenRead(gamePakPath);
+            using FileStream output = File.OpenWrite(backupPath);
+            using CompressionStream compressionStream = new CompressionStream(output, 1);
+
+            // Enable multithreading for faster compression
+            compressionStream.SetParameter(ZSTD_cParameter.ZSTD_c_nbWorkers, Environment.ProcessorCount);
+
+            // 10MB buffer (higher = more compression per frame, lower = less compression per frame)
+            // (too high and program will lag and be even slower than a lower buffer)
+            int bufferSize = 1024 * 1024 * 10; 
+
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            long totalBytesRead = 0;
+            long totalBytes = input.Length;
+
+            while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0) {
+                await compressionStream.WriteAsync(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "Compressing backup of game_pak.. (" + ((float)totalBytesRead / totalBytes * 100).ToString("N2") + "%)");
+            }
+
+            MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "gam_pak backup complete!");
+            await Task.Delay(500);
+
+            MainWindow.instance.CloseLoadingOverlay();
+        }
+
+        public async Task RestoreGamePak(string installationPath) {
+            MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "Decompressing backed up game_pak.. (0.00%)");
+            await Task.Delay(1);
+
+            // Compress the file at installationPath + @"\game_pak" using zstandard compression
+            string gamePakPath = installationPath + @"\game_pak_test";
+            string backupPath = installationPath + @"\game_pak.backup";
+
+            // 10MB buffer (higher = more compression per frame, lower = less compression per frame)
+            // (too high and program will lag and be even slower than a lower buffer)
+            int bufferSize = 1024 * 1024 * 10;
+
+            using FileStream input = File.OpenRead(backupPath);
+            using FileStream output = File.OpenWrite(gamePakPath);
+            using DecompressionStream decompressionStream = new DecompressionStream(input);
+
+            // Enable multithreading for faster compression
+            //decompressionStream.SetParameter(ZSTD_dParameter.ZSTD_c_nbWorkers, Environment.ProcessorCount);
+
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            long totalBytesRead = 0;
+            long totalBytes = input.Length;
+
+            while ((bytesRead = await decompressionStream.ReadAsync(buffer, 0, buffer.Length)) > 0) {
+                await output.WriteAsync(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "Decompressing backed up game_pak.. (" + ((float)totalBytesRead / totalBytes * 100).ToString("N2") + "%)");
+            }
+
+            MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "gam_pak restore complete!");
+            await Task.Delay(500);
+
+            MainWindow.instance.CloseLoadingOverlay();
         }
 
         public void OpenURL(string url) {

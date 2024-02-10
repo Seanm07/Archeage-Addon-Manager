@@ -53,6 +53,17 @@ namespace Archeage_Addon_Manager {
 
         // Visually display a widget for an addon in the addon list panel
         public void AddAddonWidget(AddonData addonData) {
+            string displayedAddonName = addonData.name.Length > 20 ? addonData.name.Substring(0, 20) + ".." : addonData.name;
+            string displayedAddonDescription = addonData.description.Length > 100 ? addonData.description.Substring(0, 100) + ".." : addonData.description;
+            string displayedAddonVersion = addonData.version.ToString("N2");
+
+            // Insert a \n at the last space before the 50th character to prevent cutting off words
+            if(displayedAddonDescription.Length > 50) {
+                int lastSpaceIndex = displayedAddonDescription.LastIndexOf(' ', 50);
+                if (lastSpaceIndex != -1)
+                    displayedAddonDescription = displayedAddonDescription.Substring(0, lastSpaceIndex) + "\n" + displayedAddonDescription.Substring(lastSpaceIndex + 1);
+            }
+
             // Create a horizontal group to contain each addon
             FlowLayoutPanel horizontalGroup = new FlowLayoutPanel() {
                 Dock = DockStyle.Top,
@@ -80,7 +91,7 @@ namespace Archeage_Addon_Manager {
             // Group to contain right side text labels
             FlowLayoutPanel textGroup = new FlowLayoutPanel() {
                 Width = horizontalGroup.Width - checkboxGroup.Width,
-                Height = 50 + ((addonData.description.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
+                Height = 50 + ((displayedAddonDescription.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
                 Margin = new Padding(0, 0, 0, 0)
             };
 
@@ -88,7 +99,7 @@ namespace Archeage_Addon_Manager {
             Label titleLabel = new Label() {
                 Width = textGroup.Width,
                 Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                Text = addonData.name + " - v" + addonData.version + " by " + addonData.author,
+                Text = displayedAddonName + " - v" + displayedAddonVersion + " by " + addonData.author,
                 Margin = new Padding(0, 5, 0, 0),
                 ForeColor = Color.White
             };
@@ -97,7 +108,7 @@ namespace Archeage_Addon_Manager {
             Label descriptionLabel = new Label() {
                 Width = textGroup.Width,
                 AutoSize = true,
-                Text = addonData.description,
+                Text = displayedAddonDescription,
                 Margin = new Padding(0, 0, 0, 0),
                 ForeColor = Color.White
             };

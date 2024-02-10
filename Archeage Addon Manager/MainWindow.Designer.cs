@@ -45,6 +45,8 @@
             closeWindowButton = new System.Windows.Forms.Button();
             containerPanel = new System.Windows.Forms.Panel();
             statusPanel = new System.Windows.Forms.Panel();
+            backupFilesButton = new System.Windows.Forms.Button();
+            restoreFilesButton = new System.Windows.Forms.Button();
             bottomPanel.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
@@ -257,6 +259,36 @@
             statusPanel.Size = new System.Drawing.Size(140, 113);
             statusPanel.TabIndex = 7;
             // 
+            // backupFilesButton
+            // 
+            backupFilesButton.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            backupFilesButton.FlatAppearance.BorderSize = 0;
+            backupFilesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            backupFilesButton.Font = new System.Drawing.Font("Ebrima", 11F);
+            backupFilesButton.ForeColor = System.Drawing.Color.White;
+            backupFilesButton.Location = new System.Drawing.Point(10, 40);
+            backupFilesButton.Name = "backupFilesButton";
+            backupFilesButton.Size = new System.Drawing.Size(203, 60);
+            backupFilesButton.TabIndex = 9;
+            backupFilesButton.Text = "Backup Game Files";
+            backupFilesButton.UseVisualStyleBackColor = false;
+            backupFilesButton.Click += backupFilesButton_Click;
+            // 
+            // restoreFilesButton
+            // 
+            restoreFilesButton.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            restoreFilesButton.FlatAppearance.BorderSize = 0;
+            restoreFilesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            restoreFilesButton.Font = new System.Drawing.Font("Ebrima", 11F);
+            restoreFilesButton.ForeColor = System.Drawing.Color.White;
+            restoreFilesButton.Location = new System.Drawing.Point(10, 109);
+            restoreFilesButton.Name = "restoreFilesButton";
+            restoreFilesButton.Size = new System.Drawing.Size(203, 60);
+            restoreFilesButton.TabIndex = 10;
+            restoreFilesButton.Text = "Restore Game Files\r\nFrom Backup File";
+            restoreFilesButton.UseVisualStyleBackColor = false;
+            restoreFilesButton.Click += restoreFilesButton_Click;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -264,6 +296,8 @@
             BackgroundImage = Properties.Resources.bg;
             ClientSize = new System.Drawing.Size(620, 480);
             ControlBox = false;
+            Controls.Add(restoreFilesButton);
+            Controls.Add(backupFilesButton);
             Controls.Add(containerPanel);
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
@@ -308,6 +342,8 @@
         private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Button minimiseWindowButton;
         private System.Windows.Forms.Panel containerPanel;
+        private System.Windows.Forms.Button backupFilesButton;
+        private System.Windows.Forms.Button restoreFilesButton;
     }
 }
 

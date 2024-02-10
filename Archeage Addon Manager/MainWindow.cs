@@ -266,5 +266,17 @@ namespace Archeage_Addon_Manager {
         private void MinimiseButtonClick(object sender, EventArgs e) {
             this.WindowState = FormWindowState.Minimized;
         }
+
+        private void button1_Click(object sender, EventArgs e) {
+
+        }
+
+        private void backupFilesButton_Click(object sender, EventArgs e) {
+            DeveloperManager.instance.BackupGamePak(installationPathComboBox.Text);
+        }
+
+        private void restoreFilesButton_Click(object sender, EventArgs e) {
+            DeveloperManager.instance.RestoreGamePak(installationPathComboBox.Text);
+        }
     }
 }
