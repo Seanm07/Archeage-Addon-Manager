@@ -35,7 +35,7 @@
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             manageAddonSourcesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             developersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             developerItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -134,7 +134,7 @@
             // fileToolStripMenuItem
             // 
             fileToolStripMenuItem.BackColor = System.Drawing.Color.Transparent;
-            fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { manageAddonSourcesToolStripMenuItem, propertiesToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { manageAddonSourcesToolStripMenuItem, settingsToolStripMenuItem });
             fileToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             fileToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -147,13 +147,15 @@
             manageAddonSourcesToolStripMenuItem.Name = "manageAddonSourcesToolStripMenuItem";
             manageAddonSourcesToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             manageAddonSourcesToolStripMenuItem.Text = "Check For Updates";
+            manageAddonSourcesToolStripMenuItem.Click += checkForUpdatesToolStripMenuItem_Click;
             // 
-            // propertiesToolStripMenuItem
+            // settingsToolStripMenuItem
             // 
-            propertiesToolStripMenuItem.Image = Properties.Resources.settings;
-            propertiesToolStripMenuItem.Name = "propertiesToolStripMenuItem";
-            propertiesToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            propertiesToolStripMenuItem.Text = "Settings";
+            settingsToolStripMenuItem.Image = Properties.Resources.settings;
+            settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            settingsToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            settingsToolStripMenuItem.Text = "Settings";
+            settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
             // 
             // developersToolStripMenuItem
             // 
@@ -331,7 +333,7 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageAddonSourcesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem propertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem creditsToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem developersToolStripMenuItem;

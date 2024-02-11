@@ -8,6 +8,7 @@ namespace Archeage_Addon_Manager {
 
         private Panel? loginOverlayPanel;
         private Panel? loadingOverlayPanel;
+        private Panel? settingsOverlayPanel;
 
         public MainWindow() {
             instance ??= this;
@@ -53,7 +54,7 @@ namespace Archeage_Addon_Manager {
         }
 
         public void ShowAboutDialog(object sender, EventArgs e) {
-            MessageBox.Show("Not endorsed by XLGames or Kakao Games, we don't reflect views or opinion of anyone officially involved in Archeage.\n\nKakao strongly does not recommend addon usage, you accept the potential game breaking risks!\n\nArcheage Addon Manager created by Nidoran\n\nBig thanks to Ingram for all his work and help to make this possible and his work on AAPatcher.\n\nAdditional thanks to Tamaki & Strawberry", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ShowMessagePopup("About ArcheAge Addon Manager", "Not endorsed by XLGames or Kakao Games!\nWe don't reflect views or opinion of anyone officially involved in Archeage.Kakao strongly doesn't recommend addon usage, you accept potential game breaking risks!\n\nArcheage Addon Manager program created by Nidoran\nBig thanks to Ingram for his AAPatcher work, additional thanks to Tamaki + Strawberry", "Close");
         }
 
         private void DeveloperActionButtonClick(object sender, EventArgs e) {
@@ -61,7 +62,7 @@ namespace Archeage_Addon_Manager {
                 if (DeveloperManager.instance.isDeveloper) {
                     DeveloperManager.instance.UploadAddonButtonClick(installationPathComboBox.Text);
                 } else {
-                    MessageBox.Show("Sorry but you don't have permission to upload addons!\nDM Nidoran on discord if you're interested in getting upload access.", "Developer access required!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowMessagePopup("Developer access required!", "Sorry but you don't have permission to upload addons!\n\nDM Nidoran on discord if you're interested in getting upload access.", "Ok");
                 }
             } else {
                 DeveloperManager.instance.LoginButtonClick();
@@ -120,7 +121,100 @@ namespace Archeage_Addon_Manager {
             this.Cursor = Cursors.Default;
         }
 
+        public void ShowMessagePopup(string title, string message, string yesValue, Action yesCallback = default, string noValue = "", Action noCallback = default) {
+            Panel messagePopupPanel = new Panel() {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(240, 33, 35, 38)
+            };
+
+            Label titleLabel = new Label() {
+                Width = this.Width,
+                Height = 25,
+                Location = new Point(0, (this.Height - 25) / 2 - 60),
+                Text = title,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Microsoft Sans Serif", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            Label messageLabel = new Label() {
+                Width = this.Width - 40,
+                MinimumSize = new Size(this.Width - 40, 0),
+                MaximumSize = new Size(this.Width - 40, 0),
+                AutoSize = true,
+                Location = new Point(20, (this.Height - 20) / 2 - 30),
+                Text = message,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Microsoft Sans Serif", 10, FontStyle.Regular),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            // Realign the messageLabel to the center of the form
+            messageLabel.Location = new Point(messageLabel.Location.X, ((this.Height / 2) - (messageLabel.PreferredHeight / 2)));
+
+            // Adjust titleLabel position based on the messageLabel height
+            titleLabel.Location = new Point(titleLabel.Location.X, messageLabel.Bottom - titleLabel.Height - 20);
+
+            Controls.Add(messagePopupPanel);
+            messagePopupPanel.Controls.Add(titleLabel);
+            messagePopupPanel.Controls.Add(messageLabel);
+
+            if (yesValue != "") {
+                bool singleButtonMode = noValue == "";
+
+                Button yesButton = new Button() {
+                    Width = singleButtonMode ? 200 : 100,
+                    Height = 30,
+                    Location = new Point((this.Width - (singleButtonMode ? 200 : 100)) / 2 - (singleButtonMode ? 0 : 60), messageLabel.Bottom + 20),
+                    Text = yesValue,
+                    BackColor = singleButtonMode ? Color.FromArgb(33, 33, 101) : Color.FromArgb(33, 101, 33),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+
+                messagePopupPanel.Controls.Add(yesButton);
+
+                yesButton.Click += (sender, e) => {
+                    yesCallback?.Invoke();
+                    HideMessagePopup(messagePopupPanel);
+                };
+            }
+
+            if (noValue != "") {
+                Button noButton = new Button() {
+                    Width = 100,
+                    Height = 30,
+                    Location = new Point((this.Width - 100) / 2 + 60, messageLabel.Bottom + 20),
+                    Text = noValue,
+                    BackColor = Color.FromArgb(101, 33, 33),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+
+                messagePopupPanel.Controls.Add(noButton);
+
+                noButton.Click += (sender, e) => {
+                    noCallback?.Invoke();
+                    HideMessagePopup(messagePopupPanel);
+                };
+            }
+
+            messagePopupPanel.BringToFront();
+            BringMenuBarToFront();
+        }
+
+        public void HideMessagePopup(Panel messagePopupPanel) {
+            if (messagePopupPanel != null && Controls.Contains(messagePopupPanel)) {
+                Controls.Remove(messagePopupPanel);
+            }
+        }
+
+
         public void DisplayLoginOverlay() {
+            if (loginOverlayPanel != null) return;
+
             loginOverlayPanel = new Panel() {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(240, 33, 35, 38)
@@ -207,6 +301,129 @@ namespace Archeage_Addon_Manager {
             loginOverlayPanel = null;
         }
 
+        public void ShowSettingsOverlay() {
+            if (settingsOverlayPanel != null) return;
+
+            settingsOverlayPanel = new Panel() {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(240, 33, 35, 38)
+            };
+
+            Label titleLabel = new Label() {
+                Width = this.Width,
+                Height = 25,
+                Location = new Point(0, windowDragPanel.Height + 20),
+                Text = "Addon Manager Settings",
+                TextAlign = ContentAlignment.TopCenter,
+                Font = new Font("Microsoft Sans Serif", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            Label pathLabel = new Label() {
+                Width = this.Width - 40,
+                Height = 20,
+                Location = new Point(20, titleLabel.Bottom + 20),
+                Text = "Game Installation Path",
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Microsoft Sans Serif", 8, FontStyle.Regular),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            ComboBox installationPathComboBox = new ComboBox() {
+                Width = this.Width - 40,
+                Height = 30,
+                Location = new Point(20, pathLabel.Bottom),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            // Fill the ComboBox with installation paths
+            string[] installationPaths = AddonDataManager.instance.FindInstallationPaths();
+            installationPathComboBox.Items.AddRange(installationPaths);
+            installationPathComboBox.SelectedIndex = 0; // Select index 0 by default
+
+            Label sourcesLabel = new Label() {
+                Width = this.Width - 40,
+                Height = 20,
+                Location = new Point(20, installationPathComboBox.Bottom + 20),
+                Text = "Addon Sources",
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Microsoft Sans Serif", 8, FontStyle.Regular),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            TextBox sourcesTextBox = new TextBox() {
+                Width = this.Width - 40,
+                Height = 100,
+                Multiline = true,
+                Location = new Point(20, sourcesLabel.Bottom),
+                Text = String.Join("\n", AddonDataManager.instance.GetAddonSourcesList())
+            };
+
+            Button closeButton = new Button() {
+                Width = 200,
+                Height = 30,
+                Location = new Point((this.Width - 200) / 2, sourcesTextBox.Bottom + 20),
+                Text = "Save and close",
+                BackColor = Color.FromArgb(33, 33, 101),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+
+            Label versionLabel = new Label() {
+                Width = 100,
+                Height = 20,
+                Location = new Point(this.Width - 120, this.Height - 40),
+                Text = "Version: 1.00",
+                TextAlign = ContentAlignment.MiddleRight,
+                Font = new Font("Microsoft Sans Serif", 10, FontStyle.Regular),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+
+            Button checkUpdatesButton = new Button() {
+                Width = 150,
+                Height = 30,
+                Location = new Point(versionLabel.Left - 160, this.Height - 45),
+                Text = "Check for Updates",
+                BackColor = Color.FromArgb(88, 101, 242),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+
+            Controls.Add(settingsOverlayPanel);
+            settingsOverlayPanel.Controls.Add(titleLabel);
+            settingsOverlayPanel.Controls.Add(pathLabel);
+            settingsOverlayPanel.Controls.Add(installationPathComboBox);
+            settingsOverlayPanel.Controls.Add(sourcesLabel);
+            settingsOverlayPanel.Controls.Add(sourcesTextBox);
+            settingsOverlayPanel.Controls.Add(closeButton);
+            settingsOverlayPanel.Controls.Add(versionLabel);
+            settingsOverlayPanel.Controls.Add(checkUpdatesButton);
+
+            settingsOverlayPanel.BringToFront();
+            BringMenuBarToFront();
+
+            closeButton.Click += (sender, e) => {
+                CloseSettingsOverlay();
+            };
+
+            checkUpdatesButton.Click += (sender, e) => {
+                CheckForUpdates();
+            };
+        }
+
+        public void CloseSettingsOverlay() {
+            Controls.Remove(settingsOverlayPanel);
+            settingsOverlayPanel = null;
+        }
+
+        public void CheckForUpdates() {
+            ShowMessagePopup("No Updates Found", "You're already using the latest version of the Archeage Addon Manager!", "Close");
+        }
+
         public void UpdateDeveloperButtonState() {
             if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
@@ -267,16 +484,20 @@ namespace Archeage_Addon_Manager {
             this.WindowState = FormWindowState.Minimized;
         }
 
-        private void button1_Click(object sender, EventArgs e) {
-
-        }
-
         private void backupFilesButton_Click(object sender, EventArgs e) {
             DeveloperManager.instance.BackupGamePak(installationPathComboBox.Text);
         }
 
         private void restoreFilesButton_Click(object sender, EventArgs e) {
             DeveloperManager.instance.RestoreGamePak(installationPathComboBox.Text);
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
+            ShowSettingsOverlay();
+        }
+
+        private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e) {
+            CheckForUpdates();
         }
     }
 }

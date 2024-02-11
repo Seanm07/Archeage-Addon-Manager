@@ -166,9 +166,14 @@ namespace Archeage_Addon_Manager {
             LoadAddonsFromDataSources();
         }
 
+        public string[] GetAddonSourcesList() {
+            // TODO: Load this from a config file
+            return new [] { "https://www.spacemeat.space/aamods/data/list.php" };
+        }
+
         public void LoadAddonsFromDataSources() {
-            // TODO: Allow the user to add custom addon sources which is saved to a config file/registry or something
-            AddAddonsFromURL("https://www.spacemeat.space/aamods/data/list.php");
+            foreach (string source in GetAddonSourcesList())
+                AddAddonsFromURL(source);
         }
 
         // Load addons from a URL containing a JSON array of AddonData objects
@@ -189,12 +194,7 @@ namespace Archeage_Addon_Manager {
                     AddAddonWidget(addon);
                 }
             } catch (Exception e) {
-                DialogResult selectedOption = MessageBox.Show(url + " failed to load! " + e.Message, "Failed to load addon source!", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning);
-
-                switch (selectedOption) {
-                    case DialogResult.Abort: Environment.Exit(0); break;
-                    case DialogResult.Retry: AddAddonsFromURL(url); break;
-                }
+                MainWindow.instance.ShowMessagePopup("Failed to load addon source!", url + " failed to load!\n\n" + e.Message, "Retry", () => AddAddonsFromURL(url), "Ignore");
             }
         }
 

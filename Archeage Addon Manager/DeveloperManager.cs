@@ -158,8 +158,7 @@ namespace Archeage_Addon_Manager {
                     if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
                         throw new IOException("Failed to build addon zip file!");
                 } catch (IOException ex) {
-                    if (MessageBox.Show(ex.Message, "Failed to package addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
-                        UploadAddonButtonClick(installationPath);
+                    MainWindow.instance.ShowMessagePopup("Failed to package addon!", ex.Message, "Retry", () => UploadAddonButtonClick(installationPath), "Cancel");
                     return;
                 }
 

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
@@ -10,6 +11,15 @@ namespace Archeage_Addon_Manager {
                 cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
                 return cp;
             }
+        }
+
+        protected override void OnResize(EventArgs e) {
+            base.OnResize(e);
+
+            // I don't know why but unless we refresh twice after minimizing the window, the form doesn't redraw properly
+            // Only happens due to the WS_EX_COMPOSITED custom form styling which fixes flickering when creating controls
+            this.Refresh();
+            this.Refresh();
         }
     }
 

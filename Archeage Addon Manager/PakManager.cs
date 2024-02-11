@@ -44,8 +44,7 @@ namespace Archeage_Addon_Manager {
             } catch (IOException ex) {
                 filesExtracted = false;
 
-                if (MessageBox.Show(ex.Message, "Failed to extract from game pak!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
-                    filesExtracted = GenerateUninstallPakFile(gamePakPath, targetFilePaths, pakFilename);
+                MainWindow.instance.ShowMessagePopup("Failed to extract from game pak!", ex.Message, "Retry", () => GenerateUninstallPakFile(gamePakPath, targetFilePaths, pakFilename), "Cancel");
             }
 
             // Destroy the temporary file system regardless of success or failure
@@ -110,8 +109,7 @@ namespace Archeage_Addon_Manager {
             } catch (IOException ex) {
                 pakGenerated = false;
 
-                if (MessageBox.Show(ex.Message, "Failed to generate pak file!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
-                    pakGenerated = GeneratePakFile(selectedFolder, pakFilename);
+                MainWindow.instance.ShowMessagePopup("Failed to generate pak file!", ex.Message, "Retry", () => GeneratePakFile(selectedFolder, pakFilename), "Cancel");
             }
 
             // Destroy the temporary file system regardless of success or failure
@@ -148,8 +146,7 @@ namespace Archeage_Addon_Manager {
             } catch (IOException ex) {
                 pakInstalled = false;
 
-                if (MessageBox.Show(ex.Message, "Failed to install addon!", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
-                    pakInstalled = InstallPakFile(gamePakPath, pakPath);
+                MainWindow.instance.ShowMessagePopup("Failed to install addon!", ex.Message, "Retry", () => InstallPakFile(gamePakPath, pakPath), "Cancel");
             }
 
             // Destroy the temporary file system regardless of success or failure
@@ -179,7 +176,7 @@ namespace Archeage_Addon_Manager {
 
             // Check for any duplicates in the list of scripts pending update (converting to hash set removes duplicates)
             if (scriptsPendingUpdate.Count != scriptsPendingUpdate.ToHashSet().Count()) {
-                MessageBox.Show("Two or more selected addons attempt to modify the same scripts so cannot be installed together.", "Conflicting addons selected!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MainWindow.instance.ShowMessagePopup("Conflicting addons selected!", "Two or more selected addons attempt to modify the same scripts so cannot be installed together.", "OK");
                 return;
             }
 
