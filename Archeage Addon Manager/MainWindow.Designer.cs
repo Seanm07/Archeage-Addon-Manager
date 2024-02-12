@@ -31,7 +31,6 @@
             panel1 = new System.Windows.Forms.Panel();
             bottomPanel = new System.Windows.Forms.Panel();
             label1 = new System.Windows.Forms.Label();
-            installationPathComboBox = new System.Windows.Forms.ComboBox();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             manageAddonSourcesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,7 +45,7 @@
             containerPanel = new System.Windows.Forms.Panel();
             statusPanel = new System.Windows.Forms.Panel();
             backupFilesButton = new System.Windows.Forms.Button();
-            restoreFilesButton = new System.Windows.Forms.Button();
+            backupListPanel = new System.Windows.Forms.Panel();
             bottomPanel.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
@@ -86,7 +85,6 @@
             // 
             bottomPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
             bottomPanel.Controls.Add(label1);
-            bottomPanel.Controls.Add(installationPathComboBox);
             bottomPanel.Controls.Add(InstallButton);
             bottomPanel.Location = new System.Drawing.Point(0, 397);
             bottomPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -100,22 +98,12 @@
             label1.AutoSize = true;
             label1.BackColor = System.Drawing.Color.Transparent;
             label1.ForeColor = System.Drawing.Color.White;
-            label1.Location = new System.Drawing.Point(13, 16);
+            label1.Location = new System.Drawing.Point(25, 35);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(101, 15);
             label1.TabIndex = 1;
             label1.Text = "0 addons selected";
-            // 
-            // installationPathComboBox
-            // 
-            installationPathComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            installationPathComboBox.FormattingEnabled = true;
-            installationPathComboBox.Location = new System.Drawing.Point(10, 48);
-            installationPathComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            installationPathComboBox.Name = "installationPathComboBox";
-            installationPathComboBox.Size = new System.Drawing.Size(458, 23);
-            installationPathComboBox.TabIndex = 2;
             // 
             // menuStrip1
             // 
@@ -270,26 +258,19 @@
             backupFilesButton.ForeColor = System.Drawing.Color.White;
             backupFilesButton.Location = new System.Drawing.Point(10, 40);
             backupFilesButton.Name = "backupFilesButton";
-            backupFilesButton.Size = new System.Drawing.Size(203, 60);
+            backupFilesButton.Size = new System.Drawing.Size(200, 60);
             backupFilesButton.TabIndex = 9;
             backupFilesButton.Text = "Backup Game Files";
             backupFilesButton.UseVisualStyleBackColor = false;
             backupFilesButton.Click += backupFilesButton_Click;
             // 
-            // restoreFilesButton
+            // backupListPanel
             // 
-            restoreFilesButton.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
-            restoreFilesButton.FlatAppearance.BorderSize = 0;
-            restoreFilesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            restoreFilesButton.Font = new System.Drawing.Font("Ebrima", 11F);
-            restoreFilesButton.ForeColor = System.Drawing.Color.White;
-            restoreFilesButton.Location = new System.Drawing.Point(10, 109);
-            restoreFilesButton.Name = "restoreFilesButton";
-            restoreFilesButton.Size = new System.Drawing.Size(203, 60);
-            restoreFilesButton.TabIndex = 10;
-            restoreFilesButton.Text = "Restore Game Files\r\nFrom Backup File";
-            restoreFilesButton.UseVisualStyleBackColor = false;
-            restoreFilesButton.Click += restoreFilesButton_Click;
+            backupListPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            backupListPanel.Location = new System.Drawing.Point(10, 110);
+            backupListPanel.Name = "backupListPanel";
+            backupListPanel.Size = new System.Drawing.Size(200, 180);
+            backupListPanel.TabIndex = 10;
             // 
             // MainWindow
             // 
@@ -298,7 +279,7 @@
             BackgroundImage = Properties.Resources.bg;
             ClientSize = new System.Drawing.Size(620, 480);
             ControlBox = false;
-            Controls.Add(restoreFilesButton);
+            Controls.Add(backupListPanel);
             Controls.Add(backupFilesButton);
             Controls.Add(containerPanel);
             Controls.Add(windowDragPanel);
@@ -338,14 +319,13 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem developersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem developerItemToolStripMenuItem;
-        private System.Windows.Forms.ComboBox installationPathComboBox;
         private System.Windows.Forms.Panel windowDragPanel;
         private System.Windows.Forms.Button closeWindowButton;
         private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Button minimiseWindowButton;
         private System.Windows.Forms.Panel containerPanel;
         private System.Windows.Forms.Button backupFilesButton;
-        private System.Windows.Forms.Button restoreFilesButton;
+        private System.Windows.Forms.Panel backupListPanel;
     }
 }
 

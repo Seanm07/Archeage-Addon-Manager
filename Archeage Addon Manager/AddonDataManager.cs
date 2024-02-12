@@ -230,6 +230,14 @@ namespace Archeage_Addon_Manager {
             return JsonConvert.SerializeObject(addonInfo, jsonSettings);
         }
 
+        public int GetActiveInstallationPathIndex() {
+            return 0; // TODO: Load this from a config file
+        }
+
+        public string GetActiveInstallationPath() {
+            return FindInstallationPaths()[GetActiveInstallationPathIndex()];
+        }
+
         // Search for ArcheAge installation paths on all drives
         public string[] FindInstallationPaths() {
             List<string> validPaths = new List<string>();

@@ -22,9 +22,29 @@ namespace Archeage_Addon_Manager {
             MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "Compressing backup of game_pak.. (0.00%)");
             await Task.Delay(1);
 
+            // Make the "game_pak_backups" if it doesn't exist
+            if (!Directory.Exists(installationPath + @"\game_pak_backups"))
+                Directory.CreateDirectory(installationPath + @"\game_pak_backups");
+
+            // Read the file contents of installationPath + @"\Version.dat" to get the version number, or set it to 0 if file doesn't exist
+            string versionDatPath = installationPath + @"\Version.dat";
+            string versionNumber = "0";
+
+            if (File.Exists(versionDatPath)) {
+                string versionDatContents = File.ReadAllText(versionDatPath);
+                versionNumber = AACipher.Decrypt(versionDatContents);
+            }
+
+            MessageBox.Show(versionNumber);
+
             // Compress the file at installationPath + @"\game_pak" using zstandard compression
             string gamePakPath = installationPath + @"\game_pak";
-            string backupPath = installationPath + @"\game_pak.backup";
+            string backupPath = installationPath + @"\game_pak_backups\" + versionNumber + ".backup";
+
+            // Check if the file at backupPath already exists, if it does append _1, _2, _3, etc to the end of the file name until it doesn't exist
+            
+            for (int backupIndex = 1; File.Exists(backupPath); backupIndex++)
+                backupPath = installationPath + @"\game_pak_backups\" + versionNumber + "_" + backupIndex + ".backup";
 
             using FileStream input = File.OpenRead(gamePakPath);
             using FileStream output = File.OpenWrite(backupPath);
@@ -55,17 +75,22 @@ namespace Archeage_Addon_Manager {
             MainWindow.instance.CloseLoadingOverlay();
         }
 
-        public async Task RestoreGamePak(string installationPath) {
+        public async Task RestoreGamePak(string backupFile) {
             MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "Decompressing backed up game_pak.. (0.00%)");
             await Task.Delay(1);
 
             // Compress the file at installationPath + @"\game_pak" using zstandard compression
-            string gamePakPath = installationPath + @"\game_pak_test";
-            string backupPath = installationPath + @"\game_pak.backup";
+            string gamePakPath = AddonDataManager.instance.GetActiveInstallationPath() + @"\game_pak";
+            string backupPath = backupFile;
 
             // 10MB buffer (higher = more compression per frame, lower = less compression per frame)
             // (too high and program will lag and be even slower than a lower buffer)
             int bufferSize = 1024 * 1024 * 10;
+
+            if(FileUtil.IsFileLocked(gamePakPath)) {
+                MainWindow.instance.ShowMessagePopup("Failed to restore game_pak", "game_pak is currently in use by another process. Please close the game and try again.", "OK");
+                return;
+            }
 
             using FileStream input = File.OpenRead(backupPath);
             using FileStream output = File.OpenWrite(gamePakPath);

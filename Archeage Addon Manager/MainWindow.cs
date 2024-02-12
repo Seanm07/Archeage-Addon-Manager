@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
@@ -26,14 +27,125 @@ namespace Archeage_Addon_Manager {
             // Load addons from data sources
             AddonDataManager.instance.LoadAddonsFromDataSources();
 
-            // Find archeage installation directories
-            installationPathComboBox.Items.AddRange(AddonDataManager.instance.FindInstallationPaths());
-            installationPathComboBox.SelectedIndex = 0;
+            UpdateBackupList();
+        }
+
+        public void UpdateBackupList() {
+            // Clear existing backup list
+            backupListPanel.Controls.Clear();
+
+            // Get active installation path
+            string activeInstallationPath = AddonDataManager.instance.GetActiveInstallationPath();
+
+            // Check if active installation path is valid
+            if (Directory.Exists(activeInstallationPath)) {
+                // Get backup directory path
+                string backupDirectory = Path.Combine(activeInstallationPath, "game_pak_backups");
+
+                // Check if backup directory exists
+                if (Directory.Exists(backupDirectory)) {
+                    // Get all files in the backup directory
+                    string[] backupFiles = Directory.GetFiles(backupDirectory);
+
+                    foreach (string backupFile in backupFiles) {
+                        // Create panel for each backup file
+                        Panel filePanel = new Panel() {
+                            Width = backupListPanel.Width - 20,
+                            Height = 30,
+                            Location = new Point(10, backupListPanel.Controls.Count * 30),
+                            BackColor = Color.Gray
+                        };
+
+                        // Create label for file name
+                        Label nameLabel = new Label() {
+                            Width = filePanel.Width - 80,
+                            Height = 15,
+                            Location = new Point(10, 0),
+                            Text = Path.GetFileName(backupFile),
+                            TextAlign = ContentAlignment.MiddleLeft,
+                            Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                            ForeColor = Color.White
+                        };
+
+                        // Create label for file creation date
+                        Label dateLabel = new Label() {
+                            Width = filePanel.Width - 80,
+                            Height = 15,
+                            Location = new Point(10, 15),
+                            Text = "Created: " + File.GetCreationTime(backupFile).ToString(),
+                            TextAlign = ContentAlignment.MiddleLeft,
+                            Font = new Font("Microsoft Sans Serif", 10, FontStyle.Regular),
+                            ForeColor = Color.White
+                        };
+
+                        // Create delete button
+                        Button deleteButton = new Button() {
+                            Width = 30,
+                            Height = 30,
+                            Location = new Point(filePanel.Width - 70, 0),
+                            Text = "D",
+                            BackColor = Color.Red,
+                            ForeColor = Color.White,
+                            FlatStyle = FlatStyle.Flat
+                        };
+
+                        // Create restore button
+                        Button restoreButton = new Button() {
+                            Width = 30,
+                            Height = 30,
+                            Location = new Point(filePanel.Width - 35, 0),
+                            Text = "R",
+                            BackColor = Color.Green,
+                            ForeColor = Color.White,
+                            FlatStyle = FlatStyle.Flat
+                        };
+
+                        // Add click event handlers for delete and restore buttons
+                        deleteButton.Click += (sender, e) =>
+                        {
+                            ShowMessagePopup("Delete Backup", "Are you sure you want to delete this backup?", "Yes", () => { 
+                                File.Delete(backupFile); 
+                                UpdateBackupList(); 
+                            }, "No");
+                        };
+
+                        restoreButton.Click += (sender, e) =>
+                        {
+                            ShowMessagePopup("Restore Backup", "Are you sure you want to restore this backup?", "Yes", () => { 
+                                DeveloperManager.instance.RestoreGamePak(backupFile); 
+                                UpdateBackupList();
+                            }, "No");
+                        };
+
+                        // Add controls to file panel
+                        filePanel.Controls.Add(nameLabel);
+                        filePanel.Controls.Add(dateLabel);
+                        filePanel.Controls.Add(deleteButton);
+                        filePanel.Controls.Add(restoreButton);
+
+                        // Add file panel to backup list panel
+                        backupListPanel.Controls.Add(filePanel);
+                    }
+                } else {
+                    // Backup directory does not exist yet, just show a label saying no backups exist yet
+                    Label noBackupsLabel = new Label() {
+                        Width = backupListPanel.Width,
+                        Height = 30,
+                        Location = new Point(0, 0),
+                        Text = "No backups yet!",
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                        ForeColor = Color.White
+                    };
+
+                    backupListPanel.Controls.Add(noBackupsLabel);
+                }
+            }
         }
 
         // Apply Patches bottom right form button clicked
         private void InstallButtonClick(object sender, EventArgs e) {
-            PakManager.InstallSelectedAddons(installationPathComboBox.Text);
+            PakManager.InstallSelectedAddons(AddonDataManager.instance.GetActiveInstallationPath());
         }
 
         public void OnClickAddonWidget(int addonIndex) {
@@ -60,7 +172,7 @@ namespace Archeage_Addon_Manager {
         private void DeveloperActionButtonClick(object sender, EventArgs e) {
             if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
-                    DeveloperManager.instance.UploadAddonButtonClick(installationPathComboBox.Text);
+                    DeveloperManager.instance.UploadAddonButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
                 } else {
                     ShowMessagePopup("Developer access required!", "Sorry but you don't have permission to upload addons!\n\nDM Nidoran on discord if you're interested in getting upload access.", "Ok");
                 }
@@ -341,7 +453,7 @@ namespace Archeage_Addon_Manager {
             // Fill the ComboBox with installation paths
             string[] installationPaths = AddonDataManager.instance.FindInstallationPaths();
             installationPathComboBox.Items.AddRange(installationPaths);
-            installationPathComboBox.SelectedIndex = 0; // Select index 0 by default
+            installationPathComboBox.SelectedIndex = AddonDataManager.instance.GetActiveInstallationPathIndex();
 
             Label sourcesLabel = new Label() {
                 Width = this.Width - 40,
@@ -485,11 +597,7 @@ namespace Archeage_Addon_Manager {
         }
 
         private void backupFilesButton_Click(object sender, EventArgs e) {
-            DeveloperManager.instance.BackupGamePak(installationPathComboBox.Text);
-        }
-
-        private void restoreFilesButton_Click(object sender, EventArgs e) {
-            DeveloperManager.instance.RestoreGamePak(installationPathComboBox.Text);
+            DeveloperManager.instance.BackupGamePak(AddonDataManager.instance.GetActiveInstallationPath());
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {
