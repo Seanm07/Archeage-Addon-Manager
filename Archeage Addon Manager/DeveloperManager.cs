@@ -32,10 +32,10 @@ namespace Archeage_Addon_Manager {
 
             if (File.Exists(versionDatPath)) {
                 string versionDatContents = File.ReadAllText(versionDatPath);
-                versionNumber = AACipher.Decrypt(versionDatContents);
+                versionNumber = versionDatContents;//AACipher.Decrypt(versionDatContents);
             }
 
-            MessageBox.Show(versionNumber);
+           // MessageBox.Show(versionNumber);
 
             // Compress the file at installationPath + @"\game_pak" using zstandard compression
             string gamePakPath = installationPath + @"\game_pak";

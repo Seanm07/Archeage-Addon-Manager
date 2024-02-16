@@ -28,6 +28,8 @@ namespace Archeage_Addon_Manager {
             AddonDataManager.instance.LoadAddonsFromDataSources();
 
             UpdateBackupList();
+
+            ShowMessagePopup("Test", AACipher.Decrypt("8d912b06f8e00dc6"), "OK");
         }
 
         public void UpdateBackupList() {
@@ -42,6 +44,19 @@ namespace Archeage_Addon_Manager {
                 // Get backup directory path
                 string backupDirectory = Path.Combine(activeInstallationPath, "game_pak_backups");
 
+                Label backupTitleLabel = new Label() {
+                    Width = backupListPanel.Width,
+                    Height = 20,
+                    Location = new Point(0, 0),
+                    Text = "Backups",
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = Color.FromArgb(255, 33, 35, 38)
+                };
+
+                backupListPanel.Controls.Add(backupTitleLabel);
+
                 // Check if backup directory exists
                 if (Directory.Exists(backupDirectory)) {
                     // Get all files in the backup directory
@@ -50,54 +65,58 @@ namespace Archeage_Addon_Manager {
                     foreach (string backupFile in backupFiles) {
                         // Create panel for each backup file
                         Panel filePanel = new Panel() {
-                            Width = backupListPanel.Width - 20,
+                            Width = backupListPanel.Width,
                             Height = 30,
-                            Location = new Point(10, backupListPanel.Controls.Count * 30),
-                            BackColor = Color.Gray
+                            Location = new Point(0, 20 + ((backupListPanel.Controls.Count - 1) * 30)),
+                            BackColor = Color.FromArgb(150, 33, 35, 38)
                         };
 
                         // Create label for file name
                         Label nameLabel = new Label() {
                             Width = filePanel.Width - 80,
                             Height = 15,
-                            Location = new Point(10, 0),
+                            Location = new Point(0, 0),
                             Text = Path.GetFileName(backupFile),
                             TextAlign = ContentAlignment.MiddleLeft,
-                            Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                            ForeColor = Color.White
+                            Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                            ForeColor = Color.White,
+                            BackColor = Color.Transparent
                         };
 
                         // Create label for file creation date
                         Label dateLabel = new Label() {
-                            Width = filePanel.Width - 80,
+                            Width = filePanel.Width - 70,
                             Height = 15,
-                            Location = new Point(10, 15),
-                            Text = "Created: " + File.GetCreationTime(backupFile).ToString(),
+                            Location = new Point(0, 15),
+                            Text = File.GetCreationTime(backupFile).ToString(),
                             TextAlign = ContentAlignment.MiddleLeft,
-                            Font = new Font("Microsoft Sans Serif", 10, FontStyle.Regular),
-                            ForeColor = Color.White
+                            Font = new Font("Microsoft Sans Serif", 8, FontStyle.Regular),
+                            ForeColor = Color.White,
+                            BackColor = Color.Transparent
                         };
 
                         // Create delete button
                         Button deleteButton = new Button() {
                             Width = 30,
                             Height = 30,
-                            Location = new Point(filePanel.Width - 70, 0),
+                            Location = new Point(filePanel.Width - 60, 0),
                             Text = "D",
                             BackColor = Color.Red,
                             ForeColor = Color.White,
-                            FlatStyle = FlatStyle.Flat
+                            FlatStyle = FlatStyle.Flat,
+                            FlatAppearance = { BorderSize = 0 }
                         };
 
                         // Create restore button
                         Button restoreButton = new Button() {
                             Width = 30,
                             Height = 30,
-                            Location = new Point(filePanel.Width - 35, 0),
+                            Location = new Point(filePanel.Width - 30, 0),
                             Text = "R",
                             BackColor = Color.Green,
                             ForeColor = Color.White,
-                            FlatStyle = FlatStyle.Flat
+                            FlatStyle = FlatStyle.Flat,
+                            FlatAppearance = { BorderSize = 0 }
                         };
 
                         // Add click event handlers for delete and restore buttons

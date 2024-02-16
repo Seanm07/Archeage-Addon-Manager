@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Elskom.Generic.Libs;
+using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
     public class AACipher {
@@ -18,7 +20,14 @@ namespace Archeage_Addon_Manager {
 
             Array.Reverse(paddedBytes);
 
-            using (var cipher = DES.Create()) {
+            BlowFish b = new BlowFish(KEY);
+            byte[] encryptedBytes = b.EncryptECB(paddedBytes);
+
+            Array.Reverse(encryptedBytes);
+
+            return BitConverter.ToString(encryptedBytes).Replace("-", "");
+
+            /*using (var cipher = DES.Create()) {
                 cipher.Mode = CipherMode.ECB;
                 cipher.Padding = PaddingMode.None;
                 cipher.Key = KEY;
@@ -30,36 +39,48 @@ namespace Archeage_Addon_Manager {
                 Array.Reverse(encryptedBytes);
 
                 return BitConverter.ToString(encryptedBytes).Replace("-", "");
-            }
+            }*/
         }
 
-        public static string Decrypt(string ciphertext) {
-            byte[] cipherBytes = new byte[ciphertext.Length / 2];
-            for (int i = 0; i < ciphertext.Length; i += 2) {
-                cipherBytes[i / 2] = Convert.ToByte(ciphertext.Substring(i, 2), 16);
-            }
+        public static string Decrypt(string input) {
+            // Convert the input string to a byte array
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
 
-            Array.Reverse(cipherBytes);
+            // Reverse the byte array for endianess
+            Array.Reverse(inputBytes);
 
-            using (var decipher = DES.Create()) {
-                decipher.Mode = CipherMode.ECB;
-                decipher.Padding = PaddingMode.None;
-                decipher.Key = KEY;
+            // Using BlowFish in ebc mode, with key KEY and null initialization vector
+            BlowFish b = new BlowFish(KEY);
+            //b.IV = null;
 
-                ICryptoTransform transform = decipher.CreateDecryptor();
+            byte[] decryptedBytes = b.Decrypt(inputBytes, CipherMode.ECB);
 
-                byte[] decryptedBytes = transform.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
+            // Restore the byte order
+            Array.Reverse(decryptedBytes);
 
-                Array.Reverse(decryptedBytes);
+            // Read the last byte of the decrypted data to get the padding
+            int padding = decryptedBytes[decryptedBytes.Length - 1];
 
-                int padding = decryptedBytes[decryptedBytes.Length - 1];
+            if (padding < 1 || decryptedBytes.Length > 8)
+                throw new Exception("Invalid padding");
 
-                if (padding < 1 || padding > 8) {
-                    throw new Exception("Invalid padding");
-                }
+            return Encoding.ASCII.GetString(decryptedBytes, 0, decryptedBytes.Length - padding);
 
-                return Encoding.ASCII.GetString(decryptedBytes, 0, decryptedBytes.Length - padding);
-            }
+            /*byte[] ciphertextBytes = StringToByteArray(ciphertext);
+
+            BlowFish blowfish = new BlowFish(KEY);
+
+            byte[] decryptedBytes = blowfish.Decrypt(ciphertextBytes, CipherMode.ECB);
+
+            int padding = decryptedBytes[decryptedBytes.Length - 1];
+
+            if (padding < 1 || decryptedBytes.Length > 8)
+                throw new Exception("Invalid padding");
+
+            byte[] unpaddedBytes = new byte[decryptedBytes.Length - padding];
+            Array.Copy(decryptedBytes, unpaddedBytes, unpaddedBytes.Length);
+
+            return Encoding.ASCII.GetString(unpaddedBytes);*/
         }
     }
 }
