@@ -32,19 +32,19 @@ namespace Archeage_Addon_Manager {
 
             if (File.Exists(versionDatPath)) {
                 string versionDatContents = File.ReadAllText(versionDatPath);
-                versionNumber = versionDatContents;//AACipher.Decrypt(versionDatContents);
+                versionNumber = AACipher.Decrypt(versionDatContents);
             }
 
            // MessageBox.Show(versionNumber);
 
             // Compress the file at installationPath + @"\game_pak" using zstandard compression
             string gamePakPath = installationPath + @"\game_pak";
-            string backupPath = installationPath + @"\game_pak_backups\" + versionNumber + ".backup";
+            string backupPath = installationPath + @"\game_pak_backups\" + versionNumber;
 
             // Check if the file at backupPath already exists, if it does append _1, _2, _3, etc to the end of the file name until it doesn't exist
             
             for (int backupIndex = 1; File.Exists(backupPath); backupIndex++)
-                backupPath = installationPath + @"\game_pak_backups\" + versionNumber + "_" + backupIndex + ".backup";
+                backupPath = installationPath + @"\game_pak_backups\" + versionNumber + "_" + backupIndex;
 
             using FileStream input = File.OpenRead(gamePakPath);
             using FileStream output = File.OpenWrite(backupPath);

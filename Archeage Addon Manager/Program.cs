@@ -20,6 +20,7 @@ namespace Archeage_Addon_Manager
                 Directory.CreateDirectory(FileUtil.TempFilePath());
 
             new DeveloperManager();
+            new GameVersionManager();
 
             Application.Run(new MainWindow());            
         }

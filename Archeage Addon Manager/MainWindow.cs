@@ -29,7 +29,8 @@ namespace Archeage_Addon_Manager {
 
             UpdateBackupList();
 
-            ShowMessagePopup("Test", AACipher.Decrypt("8d912b06f8e00dc6"), "OK");
+            installedPatchLabel.Text = "Patch version installed: " + GameVersionManager.GetInstalledGameVersion(false) + " (" + GameVersionManager.GetInstalledGameVersion(true) + ")";
+            latestPatchLabel.Text = "Latest patch version: " + GameVersionManager.GetExpectedGameVersion(false) + " (" + GameVersionManager.GetExpectedGameVersion(true) + ")";
         }
 
         public void UpdateBackupList() {
@@ -57,8 +58,8 @@ namespace Archeage_Addon_Manager {
 
                 backupListPanel.Controls.Add(backupTitleLabel);
 
-                // Check if backup directory exists
-                if (Directory.Exists(backupDirectory)) {
+                // Check if backup directory exists and has files in it
+                if (Directory.Exists(backupDirectory) && Directory.GetFiles(backupDirectory).Length > 0) {
                     // Get all files in the backup directory
                     string[] backupFiles = Directory.GetFiles(backupDirectory);
 
@@ -149,12 +150,13 @@ namespace Archeage_Addon_Manager {
                     // Backup directory does not exist yet, just show a label saying no backups exist yet
                     Label noBackupsLabel = new Label() {
                         Width = backupListPanel.Width,
-                        Height = 30,
-                        Location = new Point(0, 0),
-                        Text = "No backups yet!",
+                        Height = backupListPanel.Height - 20,
+                        Location = new Point(0, 20),
+                        Text = "No backups found!",
                         TextAlign = ContentAlignment.MiddleCenter,
                         Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                        ForeColor = Color.White
+                        ForeColor = Color.White,
+                        BackColor = Color.FromArgb(150, 33, 35, 38)
                     };
 
                     backupListPanel.Controls.Add(noBackupsLabel);

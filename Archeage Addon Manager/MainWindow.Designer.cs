@@ -30,6 +30,8 @@
             InstallButton = new System.Windows.Forms.Button();
             panel1 = new System.Windows.Forms.Panel();
             bottomPanel = new System.Windows.Forms.Panel();
+            latestPatchLabel = new System.Windows.Forms.Label();
+            installedPatchLabel = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,6 +86,8 @@
             // bottomPanel
             // 
             bottomPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            bottomPanel.Controls.Add(latestPatchLabel);
+            bottomPanel.Controls.Add(installedPatchLabel);
             bottomPanel.Controls.Add(label1);
             bottomPanel.Controls.Add(InstallButton);
             bottomPanel.Location = new System.Drawing.Point(0, 397);
@@ -92,13 +96,39 @@
             bottomPanel.Size = new System.Drawing.Size(620, 83);
             bottomPanel.TabIndex = 3;
             // 
+            // latestPatchLabel
+            // 
+            latestPatchLabel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            latestPatchLabel.AutoSize = true;
+            latestPatchLabel.BackColor = System.Drawing.Color.Transparent;
+            latestPatchLabel.ForeColor = System.Drawing.Color.White;
+            latestPatchLabel.Location = new System.Drawing.Point(4, 62);
+            latestPatchLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            latestPatchLabel.Name = "latestPatchLabel";
+            latestPatchLabel.Size = new System.Drawing.Size(177, 15);
+            latestPatchLabel.TabIndex = 3;
+            latestPatchLabel.Text = "Latest patch available: Unknown";
+            // 
+            // installedPatchLabel
+            // 
+            installedPatchLabel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            installedPatchLabel.AutoSize = true;
+            installedPatchLabel.BackColor = System.Drawing.Color.Transparent;
+            installedPatchLabel.ForeColor = System.Drawing.Color.White;
+            installedPatchLabel.Location = new System.Drawing.Point(4, 47);
+            installedPatchLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            installedPatchLabel.Name = "installedPatchLabel";
+            installedPatchLabel.Size = new System.Drawing.Size(182, 15);
+            installedPatchLabel.TabIndex = 2;
+            installedPatchLabel.Text = "Patch version installed: Unknown";
+            // 
             // label1
             // 
             label1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             label1.AutoSize = true;
             label1.BackColor = System.Drawing.Color.Transparent;
             label1.ForeColor = System.Drawing.Color.White;
-            label1.Location = new System.Drawing.Point(25, 35);
+            label1.Location = new System.Drawing.Point(370, 10);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(101, 15);
@@ -326,6 +356,8 @@
         private System.Windows.Forms.Panel containerPanel;
         private System.Windows.Forms.Button backupFilesButton;
         private System.Windows.Forms.Panel backupListPanel;
+        private System.Windows.Forms.Label latestPatchLabel;
+        private System.Windows.Forms.Label installedPatchLabel;
     }
 }
 
