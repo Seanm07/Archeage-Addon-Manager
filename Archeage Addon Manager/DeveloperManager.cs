@@ -122,21 +122,32 @@ namespace Archeage_Addon_Manager {
         }
 
         public void LoginButtonClick() {
-            OpenURL("https://discord.com/api/oauth2/authorize?client_id=1203510156529369178&response_type=code&redirect_uri=https%3A%2F%2Fwww.spacemeat.space%2Faamods%2Fauth.php&scope=guilds");
+            // We open in an external browser because it would be pretty sketchy needing to login to discord within the program
+            OpenURL("https://discord.com/api/oauth2/authorize?client_id=1203510156529369178&response_type=code&redirect_uri=https%3A%2F%2Fwww.spacemeat.space%2Faamods%2Fapi%2Fauth.php&scope=guilds");
 
             MainWindow.instance.DisplayLoginOverlay();
         }
 
-        public void LoginLinkButtonConfirm(string discordLinkCode) {
+        public async void LoginLinkButtonConfirm(string discordLinkCode) {
             MainWindow.instance.CloseLoginOverlay();
 
-            MessageBox.Show("TODO auth discord with code " + discordLinkCode + " for now we're logging you in as a developer for testing", "TODO");
+            MainWindow.instance.DisplayLoadingOverlay("Logging in..", "Authenticating with Discord..");
+
+            WebRequest webRequest = new WebRequest();
+            await webRequest.DoRequest("https://www.spacemeat.space/aamods/api/request.php?action=new_auth&code=" + discordLinkCode, (string response) => {
+                // TODO: The request returns a JSON string with the OAuth token, store it into a varible and set isLoggedIn to true
+                isLoggedIn = true;
+
+                MessageBox.Show("Server responded with: " + response, "TODO");
+
+                MainWindow.instance.CloseLoadingOverlay();
+
+                MainWindow.instance.UpdateDeveloperButtonState();
+            });
             
             // TODO: This is temporary for testing, remove this when the discord auth is implemented
-            isLoggedIn = true;
-            isDeveloper = true;
-
-            MainWindow.instance.UpdateDeveloperButtonState();
+            //isLoggedIn = true;
+            //isDeveloper = true;
         }
 
         public async void UploadAddonButtonClick(string installationPath) {

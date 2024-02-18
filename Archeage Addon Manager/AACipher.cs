@@ -5,24 +5,20 @@ using System.Text;
 
 namespace Archeage_Addon_Manager {
     public class AACipher {
-        private static readonly byte[] KEY = Encoding.ASCII.GetBytes("Archeage!(*!");
+        private static readonly byte[] KEY = Encoding.ASCII.GetBytes(@"Archeage!(*!");
 
         public static string Encrypt(string input) {
             // Calculate the padding size required to make the input string length a multiple of 8
             int padding = 8 - (input.Length % 8);
 
-            // Convert the input string to a byte array
-            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-
             // Pad the byte array with the padding size to make the length a multiple of 8
-            byte[] paddedBytes = new byte[inputBytes.Length + padding];
+            byte[] paddedBytes = new byte[input.Length + padding];
 
             // Copy the input bytes to the start of the padded bytes array
-            Array.Copy(inputBytes, paddedBytes, inputBytes.Length);
+            Encoding.ASCII.GetBytes(input, paddedBytes);
 
             // Fill the rest of the padded bytes with the padding size
-            for (int i = inputBytes.Length; i < paddedBytes.Length; i++)
-                paddedBytes[i] = (byte)padding;
+            paddedBytes.AsSpan(input.Length).Fill((byte)padding);
 
             // Reverse the byte order in 4 byte chunks
             paddedBytes = Swap32(paddedBytes);
@@ -31,7 +27,7 @@ namespace Archeage_Addon_Manager {
             byte[] encryptedBytes = Swap32(new BlowFish(KEY).EncryptECB(paddedBytes));
 
             // Convert the encrypted bytes to a base 16 hexadecimal string and remove any dashes
-            return BitConverter.ToString(encryptedBytes).Replace("-", "").ToLower();
+            return Convert.ToHexString(encryptedBytes).ToLowerInvariant();
         }
 
         public static string Decrypt(string input) {
@@ -40,32 +36,18 @@ namespace Archeage_Addon_Manager {
                 throw new Exception("Invalid input length");
 
             // Convert the input string to a byte array then reverse the byte order in 4 byte chunks
-            byte[] inputBytes = Swap32(StringPairsToByteArray(input));
+            byte[] inputBytes = Swap32(Convert.FromHexString(input));
 
             // Decript the bytes using BlowFish in ECB cipher mode, with key KEY then reverse the byte order in 4 byte chunks
             byte[] decryptedBytes = Swap32(new BlowFish(KEY).Decrypt(inputBytes, CipherMode.ECB));
 
             // Read the last byte of the decrypted data to get the padding size
-            int padding = decryptedBytes[decryptedBytes.Length - 1];
+            int padding = decryptedBytes[^1];
 
-            if (padding < 1 || decryptedBytes.Length > 8)
+            if (padding < 1 || padding > 8)
                 throw new Exception("Invalid padding");
 
             return Encoding.ASCII.GetString(decryptedBytes, 0, decryptedBytes.Length - padding);
-        }
-
-        // Each pair of characters in the input string will represent a byte in the output byte array
-        private static byte[] StringPairsToByteArray(string input) {
-            int inputLength = input.Length;
-
-            // Each pair of characters will represent a byte to half the inputLength for the byte array size
-            byte[] output = new byte[inputLength / 2];
-
-            // Iterate through the input string converting each pair of base 16 hexadecimal numbers to a byte
-            for (int i = 0; i < inputLength; i += 2)
-                output[i / 2] = Convert.ToByte(input.Substring(i, 2), 16);
-
-            return output;
         }
 
         // Swap the byte order of the input byte array in 4 byte chunks (1,2,3,4,5,6,7,8 -> 4,3,2,1,8,7,6,5)

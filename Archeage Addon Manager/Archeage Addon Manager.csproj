@@ -34,9 +34,13 @@
     <None Remove="Resources\bg.png" />
     <None Remove="Resources\cloud_upload.png" />
     <None Remove="Resources\daru_green.png" />
+    <None Remove="Resources\delete.png" />
     <None Remove="Resources\destruction.png" />
+    <None Remove="Resources\file_explorer.png" />
     <None Remove="Resources\lock.png" />
     <None Remove="Resources\purify.png" />
+    <None Remove="Resources\refresh.png" />
+    <None Remove="Resources\rollback.png" />
     <None Remove="Resources\settings.png" />
     <None Remove="Resources\update.png" />
   </ItemGroup>
@@ -65,13 +69,25 @@
     <EmbeddedResource Include="Resources\daru_green.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\delete.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\destruction.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\file_explorer.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\lock.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\purify.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\refresh.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\rollback.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\settings.png">

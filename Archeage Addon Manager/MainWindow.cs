@@ -37,6 +37,9 @@ namespace Archeage_Addon_Manager {
             // Clear existing backup list
             backupListPanel.Controls.Clear();
 
+            // Get backupListPanel.Width minus scrollbar width if the autoscroll is visible
+            int backupListPanelWidth = backupListPanel.Width;
+
             // Get active installation path
             string activeInstallationPath = AddonDataManager.instance.GetActiveInstallationPath();
 
@@ -45,8 +48,14 @@ namespace Archeage_Addon_Manager {
                 // Get backup directory path
                 string backupDirectory = Path.Combine(activeInstallationPath, "game_pak_backups");
 
+                // Count how many files in backupDirectory have extension .game_pak_backup
+                int backupFileCount = Directory.GetFiles(backupDirectory, "*.game_pak_backup").Length;
+
+                if(backupFileCount > 5)
+                    backupListPanelWidth -= SystemInformation.VerticalScrollBarWidth;
+
                 Label backupTitleLabel = new Label() {
-                    Width = backupListPanel.Width,
+                    Width = backupListPanelWidth,
                     Height = 20,
                     Location = new Point(0, 0),
                     Text = "Backups",
@@ -56,17 +65,66 @@ namespace Archeage_Addon_Manager {
                     BackColor = Color.FromArgb(255, 33, 35, 38)
                 };
 
+                Button openInExplorerButton = new Button() {
+                    Width = 20,
+                    Height = 20,
+                    Location = new Point(backupListPanelWidth - 20, 0),
+                    Text = "",
+                    BackColor = Color.FromArgb(255, 33, 35, 38),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    FlatAppearance = { BorderSize = 0 },
+                    Image = Image.FromFile("Resources/file_explorer.png"),
+                    ImageAlign = ContentAlignment.MiddleCenter
+                };
+
+                Button refreshButton = new Button() {
+                    Width = 20,
+                    Height = 20,
+                    Location = new Point(backupListPanelWidth - 40, 0),
+                    Text = "",
+                    BackColor = Color.FromArgb(255, 33, 35, 38),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    FlatAppearance = { BorderSize = 0 },
+                    Image = Image.FromFile("Resources/refresh.png"),
+                    ImageAlign = ContentAlignment.MiddleCenter
+                };
+
                 backupListPanel.Controls.Add(backupTitleLabel);
+                backupTitleLabel.Controls.Add(openInExplorerButton);
+                backupTitleLabel.Controls.Add(refreshButton);
+
+                openInExplorerButton.Click += (sender, e) => {
+                    DeveloperManager.instance.OpenURL(backupDirectory);
+                };
+
+                new ToolTip().SetToolTip(openInExplorerButton, "Open in File Explorer");
+
+                refreshButton.Click += (sender, e) => {
+                    UpdateBackupList();
+                };
+
+                new ToolTip().SetToolTip(refreshButton, "Refresh backups");
 
                 // Check if backup directory exists and has files in it
                 if (Directory.Exists(backupDirectory) && Directory.GetFiles(backupDirectory).Length > 0) {
                     // Get all files in the backup directory
                     string[] backupFiles = Directory.GetFiles(backupDirectory);
 
+                    // Sort the backup files by creation date (newest first)
+                    Array.Sort(backupFiles, (x, y) => File.GetCreationTime(y).CompareTo(File.GetCreationTime(x)));
+
                     foreach (string backupFile in backupFiles) {
+                        // Get the file extension of backupFile
+                        string backupFileExtension = Path.GetExtension(backupFile);
+                        if (backupFileExtension != ".game_pak_backup") continue;
+
+                        string backupFileName = Path.GetFileNameWithoutExtension(backupFile);
+
                         // Create panel for each backup file
                         Panel filePanel = new Panel() {
-                            Width = backupListPanel.Width,
+                            Width = backupListPanelWidth,
                             Height = 30,
                             Location = new Point(0, 20 + ((backupListPanel.Controls.Count - 1) * 30)),
                             BackColor = Color.FromArgb(150, 33, 35, 38)
@@ -74,12 +132,12 @@ namespace Archeage_Addon_Manager {
 
                         // Create label for file name
                         Label nameLabel = new Label() {
-                            Width = filePanel.Width - 80,
-                            Height = 15,
-                            Location = new Point(0, 0),
-                            Text = Path.GetFileName(backupFile),
+                            Width = filePanel.Width - 70,
+                            Height = 13,
+                            Location = new Point(2, 2),
+                            Text = "Version " + backupFileName,
                             TextAlign = ContentAlignment.MiddleLeft,
-                            Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                            Font = new Font("Microsoft Sans Serif", 8, FontStyle.Bold),
                             ForeColor = Color.White,
                             BackColor = Color.Transparent
                         };
@@ -87,8 +145,8 @@ namespace Archeage_Addon_Manager {
                         // Create label for file creation date
                         Label dateLabel = new Label() {
                             Width = filePanel.Width - 70,
-                            Height = 15,
-                            Location = new Point(0, 15),
+                            Height = 13,
+                            Location = new Point(2, 15),
                             Text = File.GetCreationTime(backupFile).ToString(),
                             TextAlign = ContentAlignment.MiddleLeft,
                             Font = new Font("Microsoft Sans Serif", 8, FontStyle.Regular),
@@ -101,11 +159,13 @@ namespace Archeage_Addon_Manager {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 60, 0),
-                            Text = "D",
-                            BackColor = Color.Red,
+                            Text = "",
+                            BackColor = Color.FromArgb(101, 33, 33),
                             ForeColor = Color.White,
                             FlatStyle = FlatStyle.Flat,
-                            FlatAppearance = { BorderSize = 0 }
+                            FlatAppearance = { BorderSize = 0 },
+                            Image = Image.FromFile("Resources/delete.png"),
+                            ImageAlign = ContentAlignment.MiddleCenter
                         };
 
                         // Create restore button
@@ -113,11 +173,13 @@ namespace Archeage_Addon_Manager {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 30, 0),
-                            Text = "R",
-                            BackColor = Color.Green,
+                            Text = "",
+                            BackColor = Color.FromArgb(33, 101, 33),
                             ForeColor = Color.White,
                             FlatStyle = FlatStyle.Flat,
-                            FlatAppearance = { BorderSize = 0 }
+                            FlatAppearance = { BorderSize = 0 },
+                            Image = Image.FromFile("Resources/rollback.png"),
+                            ImageAlign = ContentAlignment.MiddleCenter
                         };
 
                         // Add click event handlers for delete and restore buttons
@@ -129,13 +191,17 @@ namespace Archeage_Addon_Manager {
                             }, "No");
                         };
 
+                        new ToolTip().SetToolTip(deleteButton, "Delete backup " + backupFileName);
+
                         restoreButton.Click += (sender, e) =>
                         {
-                            ShowMessagePopup("Restore Backup", "Are you sure you want to restore this backup?", "Yes", () => { 
-                                DeveloperManager.instance.RestoreGamePak(backupFile); 
+                            ShowMessagePopup("Restore Backup", "Are you sure you want to restore this backup?", "Yes", () => {
+                                _ = DeveloperManager.instance.RestoreGamePak(backupFile); 
                                 UpdateBackupList();
                             }, "No");
                         };
+
+                        new ToolTip().SetToolTip(restoreButton, "Restore backup " + backupFileName);
 
                         // Add controls to file panel
                         filePanel.Controls.Add(nameLabel);
@@ -146,10 +212,12 @@ namespace Archeage_Addon_Manager {
                         // Add file panel to backup list panel
                         backupListPanel.Controls.Add(filePanel);
                     }
-                } else {
+                }
+
+                if(backupListPanel.Controls.Count <= 1) {
                     // Backup directory does not exist yet, just show a label saying no backups exist yet
                     Label noBackupsLabel = new Label() {
-                        Width = backupListPanel.Width,
+                        Width = backupListPanelWidth,
                         Height = backupListPanel.Height - 20,
                         Location = new Point(0, 20),
                         Text = "No backups found!",

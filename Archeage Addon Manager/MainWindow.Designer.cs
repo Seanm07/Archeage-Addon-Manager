@@ -296,6 +296,7 @@
             // 
             // backupListPanel
             // 
+            backupListPanel.AutoScroll = true;
             backupListPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
             backupListPanel.Location = new System.Drawing.Point(10, 110);
             backupListPanel.Name = "backupListPanel";
@@ -315,6 +316,7 @@
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
             Controls.Add(statusPanel);
+            DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;

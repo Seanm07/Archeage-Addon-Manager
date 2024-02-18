@@ -168,7 +168,7 @@ namespace Archeage_Addon_Manager {
 
         public string[] GetAddonSourcesList() {
             // TODO: Load this from a config file
-            return new [] { "https://www.spacemeat.space/aamods/data/list.php" };
+            return new [] { "https://www.spacemeat.space/aamods/api/list.php" };
         }
 
         public void LoadAddonsFromDataSources() {
