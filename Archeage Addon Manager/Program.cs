@@ -21,6 +21,7 @@ namespace Archeage_Addon_Manager
 
             new DeveloperManager();
             new GameVersionManager();
+            new ProgramManager();
 
             Application.Run(new MainWindow());            
         }

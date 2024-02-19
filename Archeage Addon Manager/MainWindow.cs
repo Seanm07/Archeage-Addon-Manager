@@ -96,7 +96,7 @@ namespace Archeage_Addon_Manager {
                 backupTitleLabel.Controls.Add(refreshButton);
 
                 openInExplorerButton.Click += (sender, e) => {
-                    DeveloperManager.instance.OpenURL(backupDirectory);
+                    WebRequest.ExternalOpenURL(backupDirectory);
                 };
 
                 new ToolTip().SetToolTip(openInExplorerButton, "Open in File Explorer");
@@ -196,7 +196,7 @@ namespace Archeage_Addon_Manager {
                         restoreButton.Click += (sender, e) =>
                         {
                             ShowMessagePopup("Restore Backup", "Are you sure you want to restore this backup?", "Yes", () => {
-                                _ = DeveloperManager.instance.RestoreGamePak(backupFile); 
+                                _ = PakManager.RestoreGamePak(backupFile); 
                                 UpdateBackupList();
                             }, "No");
                         };
@@ -686,7 +686,7 @@ namespace Archeage_Addon_Manager {
         }
 
         private void backupFilesButton_Click(object sender, EventArgs e) {
-            DeveloperManager.instance.BackupGamePak(AddonDataManager.instance.GetActiveInstallationPath());
+            _ = PakManager.BackupGamePak(AddonDataManager.instance.GetActiveInstallationPath());
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e) {

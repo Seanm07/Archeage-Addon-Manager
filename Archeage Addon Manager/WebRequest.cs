@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System;
+using System.Diagnostics;
 
 namespace Archeage_Addon_Manager {
     public class WebRequest {
@@ -50,6 +51,10 @@ namespace Archeage_Addon_Manager {
             callback(content);
         }
 
-        
+        public static void ExternalOpenURL(string url) {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+
+
     }
 }

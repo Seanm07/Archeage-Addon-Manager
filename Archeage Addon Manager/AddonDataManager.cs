@@ -167,8 +167,10 @@ namespace Archeage_Addon_Manager {
         }
 
         public string[] GetAddonSourcesList() {
-            // TODO: Load this from a config file
-            return new [] { "https://www.spacemeat.space/aamods/api/list.php" };
+            string addonSources = ProgramManager.ReadFromConfigFile("addon_sources", "https://www.spacemeat.space/aamods/api/list.php");
+
+            // Split the comma separated list of addon sources into an array
+            return addonSources.Split(',');
         }
 
         public void LoadAddonsFromDataSources() {

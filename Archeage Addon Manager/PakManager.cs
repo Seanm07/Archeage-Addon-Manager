@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net;
+using ZstdSharp.Unsafe;
+using ZstdSharp;
 
 namespace Archeage_Addon_Manager {
     public class PakManager {
@@ -207,6 +209,105 @@ namespace Archeage_Addon_Manager {
                     curAddon++;
                 }
             }
+
+            MainWindow.instance.CloseLoadingOverlay();
+        }
+
+        public static async Task BackupGamePak(string installationPath) {
+            MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "Compressing backup of game_pak.. (0.00%)");
+            await Task.Delay(1);
+
+            // Make the "game_pak_backups" if it doesn't exist
+            if (!Directory.Exists(installationPath + @"\game_pak_backups"))
+                Directory.CreateDirectory(installationPath + @"\game_pak_backups");
+
+            // Read the file contents of installationPath + @"\Version.dat" to get the version number, or set it to 0 if file doesn't exist
+            string versionDatPath = installationPath + @"\Version.dat";
+            string versionNumber = "0";
+
+            if (File.Exists(versionDatPath)) {
+                string versionDatContents = File.ReadAllText(versionDatPath);
+                versionNumber = AACipher.Decrypt(versionDatContents);
+            }
+
+            // MessageBox.Show(versionNumber);
+
+            // Compress the file at installationPath + @"\game_pak" using zstandard compression
+            string gamePakPath = installationPath + @"\game_pak";
+            string backupPath = installationPath + @"\game_pak_backups\" + versionNumber;
+
+            // Check if the file at backupPath already exists, if it does append _1, _2, _3, etc to the end of the file name until it doesn't exist
+
+            for (int backupIndex = 1; File.Exists(backupPath); backupIndex++)
+                backupPath = installationPath + @"\game_pak_backups\" + versionNumber + "_" + backupIndex;
+
+            using FileStream input = File.OpenRead(gamePakPath);
+            using FileStream output = File.OpenWrite(backupPath);
+            using CompressionStream compressionStream = new CompressionStream(output, 1);
+
+            // Enable multithreading for faster compression
+            compressionStream.SetParameter(ZSTD_cParameter.ZSTD_c_nbWorkers, Environment.ProcessorCount);
+
+            // 10MB buffer (higher = more compression per frame, lower = less compression per frame)
+            // (too high and program will lag and be even slower than a lower buffer)
+            int bufferSize = 1024 * 1024 * 10;
+
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            long totalBytesRead = 0;
+            long totalBytes = input.Length;
+
+            while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0) {
+                await compressionStream.WriteAsync(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "Compressing backup of game_pak.. (" + ((float)totalBytesRead / totalBytes * 100).ToString("N2") + "%)");
+            }
+
+            MainWindow.instance.DisplayLoadingOverlay("Backing up game files..", "gam_pak backup complete!");
+            await Task.Delay(500);
+
+            MainWindow.instance.CloseLoadingOverlay();
+        }
+
+        public static async Task RestoreGamePak(string backupFile) {
+            MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "Decompressing backed up game_pak.. (0.00%)");
+            await Task.Delay(1);
+
+            // Compress the file at installationPath + @"\game_pak" using zstandard compression
+            string gamePakPath = AddonDataManager.instance.GetActiveInstallationPath() + @"\game_pak";
+            string backupPath = backupFile;
+
+            // 10MB buffer (higher = more compression per frame, lower = less compression per frame)
+            // (too high and program will lag and be even slower than a lower buffer)
+            int bufferSize = 1024 * 1024 * 10;
+
+            if (FileUtil.IsFileLocked(gamePakPath)) {
+                MainWindow.instance.ShowMessagePopup("Failed to restore game_pak", "game_pak is currently in use by another process. Please close the game and try again.", "OK");
+                return;
+            }
+
+            using FileStream input = File.OpenRead(backupPath);
+            using FileStream output = File.OpenWrite(gamePakPath);
+            using DecompressionStream decompressionStream = new DecompressionStream(input);
+
+            // Enable multithreading for faster compression
+            //decompressionStream.SetParameter(ZSTD_dParameter.ZSTD_c_nbWorkers, Environment.ProcessorCount);
+
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            long totalBytesRead = 0;
+            long totalBytes = input.Length;
+
+            while ((bytesRead = await decompressionStream.ReadAsync(buffer, 0, buffer.Length)) > 0) {
+                await output.WriteAsync(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "Decompressing backed up game_pak.. (" + ((float)totalBytesRead / totalBytes * 100).ToString("N2") + "%)");
+            }
+
+            MainWindow.instance.DisplayLoadingOverlay("Restore game files from backup..", "gam_pak restore complete!");
+            await Task.Delay(500);
 
             MainWindow.instance.CloseLoadingOverlay();
         }
