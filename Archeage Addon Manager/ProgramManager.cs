@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Archeage_Addon_Manager {
     internal class ProgramManager {
@@ -20,11 +16,22 @@ namespace Archeage_Addon_Manager {
             if (!File.Exists(configFile))
                 File.Create(configFile).Close();
 
-            // Create or append to the config file
-            using (StreamWriter sw = File.AppendText(configFile)) {
-                // Write key-value pair
-                sw.WriteLine($"{key}={value}");
+            // Read all lines from the config file
+            var lines = File.ReadAllLines(configFile).ToList();
+
+            // Check if the key already exists
+            var index = lines.FindIndex(line => line.StartsWith(key + "="));
+
+            if (index != -1) {
+                // If the key exists, replace the line with the new key-value pair
+                lines[index] = $"{key}={value}";
+            } else {
+                // If the key doesn't exist, add the new key-value pair
+                lines.Add($"{key}={value}");
             }
+
+            // Write the lines back to the config file
+            File.WriteAllLines(configFile, lines);
         }
 
         public static string ReadFromConfigFile(string key, string defaultValue = "") {

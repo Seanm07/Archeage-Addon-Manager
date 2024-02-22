@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
 using System.Windows.Forms;
 using System.Threading.Tasks;
-using ZstdSharp;
-using ZstdSharp.Unsafe;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Archeage_Addon_Manager {
     internal class DeveloperManager {
@@ -18,7 +16,85 @@ namespace Archeage_Addon_Manager {
             instance ??= this;
         }        
 
-        
+        public void CheckLoggedInState() {
+            if (!string.IsNullOrWhiteSpace(ProgramManager.ReadFromConfigFile("discord_access_token", ""))) {
+                long expiryTimestamp = long.Parse(ProgramManager.ReadFromConfigFile("discord_token_expiry", "0"));
+
+                // Check if the access token expires in the next 48 hours
+                if (DateTimeOffset.Now.ToUnixTimeSeconds() + 172800 > expiryTimestamp) {
+                    RefreshDiscordAccessToken();
+                } else {
+                    isLoggedIn = true;
+                }
+            } else {
+                Logout();
+            }
+        }
+
+        public async void RefreshDiscordAccessToken() {
+            string refreshToken = ProgramManager.ReadFromConfigFile("discord_refresh_token", "");
+
+            if (!string.IsNullOrWhiteSpace(refreshToken)) {
+                await new WebRequest().DoRequest("https://www.spacemeat.space/aamods/api/request.php?action=refresh_auth&refresh_token=" + refreshToken, (string response) => {
+                    ProcessDiscordOAuthResponse(response);
+                });
+            } else {
+                Logout();
+            }
+
+            MainWindow.instance.UpdateDeveloperButtonState();
+        }
+
+        public void Logout() {
+            ProgramManager.WriteToConfigFile("discord_access_token", "");
+            ProgramManager.WriteToConfigFile("discord_token_expiry", "");
+            ProgramManager.WriteToConfigFile("discord_refresh_token", "");
+
+            isLoggedIn = false;
+            isDeveloper = false;
+
+            MainWindow.instance.UpdateDeveloperButtonState();
+        }
+
+        private void ProcessDiscordOAuthResponse(string response) {
+            JObject jsonResponse = JObject.Parse(response);
+
+            try {
+                if (jsonResponse.TryGetValue("access_token", out JToken? accessToken) && accessToken != null) {
+                    string accessTokenString = accessToken.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(accessTokenString))
+                        ProgramManager.WriteToConfigFile("discord_access_token", accessTokenString);
+                } else {
+                    throw new IOException("Invalid discord access token!");
+                }
+
+                if (jsonResponse.TryGetValue("expires_in", out JToken? expiresIn) && expiresIn != null) {
+                    // Current timestamp + expires_in = expiry timestamp
+                    string accessTokenExpiry = (DateTimeOffset.Now.ToUnixTimeSeconds() + long.Parse(expiresIn.ToString())).ToString();
+
+                    if (!string.IsNullOrWhiteSpace(accessTokenExpiry))
+                        ProgramManager.WriteToConfigFile("discord_token_expiry", accessTokenExpiry);
+                } else {
+                    throw new IOException("Invalid discord access token!");
+                }
+
+                if (jsonResponse.TryGetValue("refresh_token", out JToken? refreshToken) && refreshToken != null) {
+                    string refreshTokenString = refreshToken.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(refreshTokenString))
+                        ProgramManager.WriteToConfigFile("discord_refresh_token", refreshTokenString);
+                } else {
+                    throw new IOException("Invalid discord refresh token!");
+                }
+
+                isLoggedIn = true;
+            } catch (IOException e) {
+                MainWindow.instance.ShowMessagePopup("Failed to authenticate with Discord!", e.Message, "Retry", () => LoginButtonClick(), "Cancel");
+
+                Logout();
+            }
+        }
 
         public void LoginButtonClick() {
             // We open in an external browser because it would be pretty sketchy needing to login to discord within the program
@@ -32,21 +108,12 @@ namespace Archeage_Addon_Manager {
 
             MainWindow.instance.DisplayLoadingOverlay("Logging in..", "Authenticating with Discord..");
 
-            WebRequest webRequest = new WebRequest();
-            await webRequest.DoRequest("https://www.spacemeat.space/aamods/api/request.php?action=new_auth&code=" + discordLinkCode, (string response) => {
-                // TODO: The request returns a JSON string with the OAuth token, store it into a varible and set isLoggedIn to true
-                isLoggedIn = true;
-
-                MessageBox.Show("Server responded with: " + response, "TODO");
+            await new WebRequest().DoRequest("https://www.spacemeat.space/aamods/api/request.php?action=new_auth&code=" + discordLinkCode, (string response) => {
+                ProcessDiscordOAuthResponse(response);
 
                 MainWindow.instance.CloseLoadingOverlay();
-
                 MainWindow.instance.UpdateDeveloperButtonState();
             });
-            
-            // TODO: This is temporary for testing, remove this when the discord auth is implemented
-            //isLoggedIn = true;
-            //isDeveloper = true;
         }
 
         public async void UploadAddonButtonClick(string installationPath) {

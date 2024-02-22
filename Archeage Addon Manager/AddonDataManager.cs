@@ -169,13 +169,33 @@ namespace Archeage_Addon_Manager {
         public string[] GetAddonSourcesList() {
             string addonSources = ProgramManager.ReadFromConfigFile("addon_sources", "https://www.spacemeat.space/aamods/api/list.php");
 
-            // Split the comma separated list of addon sources into an array
-            return addonSources.Split(',');
+            // Split the comma separated list of addon sources into an array and remove any empty strings
+            return addonSources.Split(',').Where(source => !string.IsNullOrWhiteSpace(source)).ToArray();
+        }
+
+        public void SaveAddonSourcesList(string addonSources) {
+            // Remove any whitespace and split the comma separated list of addon sources into an array
+            string formattedAddonSources = string.Join(",", addonSources.Split(new char[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+            ProgramManager.WriteToConfigFile("addon_sources", formattedAddonSources);
+
+            ReloadAddonsFromDataSources();
         }
 
         public void LoadAddonsFromDataSources() {
-            foreach (string source in GetAddonSourcesList())
-                AddAddonsFromURL(source);
+            string[] addonSourcesArray = GetAddonSourcesList();
+
+            // If the list is empty, prompt a message to add the default source
+            if (addonSourcesArray.Length <= 0) {
+                MainWindow.instance.ShowMessagePopup("No addon sources found!", "No addon sources found in the config file!\nWould you like to revert back to the default source?", "Yes",
+                    () => {
+                        SaveAddonSourcesList("https://www.spacemeat.space/aamods/api/list.php");
+                        ReloadAddonsFromDataSources();
+                    }, "No");
+            } else {
+                foreach (string source in addonSourcesArray)
+                    AddAddonsFromURL(source);
+            }
         }
 
         // Load addons from a URL containing a JSON array of AddonData objects
@@ -233,7 +253,15 @@ namespace Archeage_Addon_Manager {
         }
 
         public int GetActiveInstallationPathIndex() {
-            return 0; // TODO: Load this from a config file
+            // Get active installation path from config file
+            return int.Parse(ProgramManager.ReadFromConfigFile("installation_path_index", "0"));
+        }
+
+        public void SetActiveInstallationPathIndex(int index, string customPath = "") {
+            ProgramManager.WriteToConfigFile("installation_path_index", index.ToString());
+
+            MainWindow.instance.UpdateBackupList();
+            MainWindow.instance.UpdatePatchInfoLabels();
         }
 
         public string GetActiveInstallationPath() {

@@ -28,7 +28,12 @@ namespace Archeage_Addon_Manager {
             AddonDataManager.instance.LoadAddonsFromDataSources();
 
             UpdateBackupList();
+            UpdatePatchInfoLabels();
 
+            DeveloperManager.instance.CheckLoggedInState();
+        }
+
+        public void UpdatePatchInfoLabels() {
             installedPatchLabel.Text = "Patch version installed: " + GameVersionManager.GetInstalledGameVersion(false) + " (" + GameVersionManager.GetInstalledGameVersion(true) + ")";
             latestPatchLabel.Text = "Latest patch version: " + GameVersionManager.GetExpectedGameVersion(false) + " (" + GameVersionManager.GetExpectedGameVersion(true) + ")";
         }
@@ -229,6 +234,20 @@ namespace Archeage_Addon_Manager {
 
                     backupListPanel.Controls.Add(noBackupsLabel);
                 }
+            } else {
+                // Invalid game directory
+                Label invalidGameDirectoryLabel = new Label() {
+                    Width = backupListPanelWidth,
+                    Height = backupListPanel.Height,
+                    Location = new Point(0, 0),
+                    Text = "Bad installation path!\n\"" + activeInstallationPath + "\"",
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                    ForeColor = Color.Red,
+                    BackColor = Color.FromArgb(150, 33, 35, 38)
+                };
+
+                backupListPanel.Controls.Add(invalidGameDirectoryLabel);
             }
         }
 
@@ -560,7 +579,7 @@ namespace Archeage_Addon_Manager {
                 Height = 100,
                 Multiline = true,
                 Location = new Point(20, sourcesLabel.Bottom),
-                Text = String.Join("\n", AddonDataManager.instance.GetAddonSourcesList())
+                Text = String.Join("\r\n", AddonDataManager.instance.GetAddonSourcesList())
             };
 
             Button closeButton = new Button() {
@@ -608,6 +627,8 @@ namespace Archeage_Addon_Manager {
             BringMenuBarToFront();
 
             closeButton.Click += (sender, e) => {
+                AddonDataManager.instance.SetActiveInstallationPathIndex(installationPathComboBox.SelectedIndex);
+                AddonDataManager.instance.SaveAddonSourcesList(sourcesTextBox.Text);
                 CloseSettingsOverlay();
             };
 
