@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Archeage_Addon_Manager {
@@ -70,6 +72,140 @@ namespace Archeage_Addon_Manager {
 
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) {
             //base.OnRenderToolStripBorder(e);
+        }
+    }
+
+    public class CustomPanel : Panel {
+        [DllImport("user32.dll")]
+        private static extern int ShowScrollBar(IntPtr hWnd, int wBar, int bShow);
+
+        private const int SB_VERT = 1;
+
+        private int scrollPosition = 0; // Current scroll position
+        private int scrollThumbSize = 50; // Size of the scrollbar thumb
+        private bool thumbDragging = false;
+        private int thumbDragOffset = 0;
+
+        public CustomPanel() {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+
+            // Hide the system default vertical scrollbar
+            ShowScrollBar(Handle, SB_VERT, 0);
+        }
+
+        protected override void OnSizeChanged(EventArgs e) {
+            base.OnSizeChanged(e);
+
+            // Hide the system default vertical scrollbar
+            ShowScrollBar(Handle, SB_VERT, 0);
+        }
+
+        protected override void OnPaint(PaintEventArgs e) {
+            base.OnPaint(e);
+
+            int trackWidth = SystemInformation.VerticalScrollBarWidth; // Width of the vertical scroll area
+            int thumbMargin = 4; // Margin for the thumb
+            int thumbWidth = trackWidth - 2 * thumbMargin; // Width of the thumb excluding margins
+
+            // Custom drawing for scrollbar
+            using (var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38)))
+            using (var thumbBrush = new SolidBrush(Color.FromArgb(255, 255, 255, 255))) {
+                // Draw background for the vertical scroll area
+                e.Graphics.FillRectangle(bgBrush, ClientSize.Width - trackWidth, 0, trackWidth, ClientSize.Height);
+
+                // Calculate thumb position and size
+                int trackHeight = ClientSize.Height;
+                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
+                int thumbPos = (int)((float)scrollPosition / (ContentHeight() - ClientSize.Height) * (trackHeight - thumbHeight));
+
+                // Draw thumb
+                e.Graphics.FillRectangle(thumbBrush, ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight - (thumbMargin * 2));
+            }
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e) {
+            base.OnMouseWheel(e);
+
+            int scrollAmount = SystemInformation.MouseWheelScrollLines * e.Delta;
+            scrollPosition = Math.Max(0, Math.Min(scrollPosition - scrollAmount, ContentHeight() - ClientSize.Height));
+
+            Invalidate();
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e) {
+            base.OnMouseDown(e);
+
+            if (e.Button == MouseButtons.Left) {
+                // Calculate thumb position and size
+                int trackHeight = ClientSize.Height;
+                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
+                int thumbPos = (int)((float)scrollPosition / (ContentHeight() - ClientSize.Height) * (trackHeight - thumbHeight));
+
+                int thumbMargin = 2; // Margin for the thumb
+                int trackWidth = SystemInformation.VerticalScrollBarWidth; // Width of the vertical scroll area
+
+
+                // TODO: Rework and cleanup, doesn't work
+                // Calculate thumb bounds including margin
+                Rectangle thumbBounds = new Rectangle(ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin,
+                                                       trackWidth - 2 * thumbMargin, thumbHeight - 2 * thumbMargin);
+
+                // Check if the mouse is within the thumb bounds
+                if (thumbBounds.Contains(e.Location)) {
+                    // Start dragging the thumb
+                    thumbDragging = true;
+                    thumbDragOffset = e.Y - thumbBounds.Top;
+                }
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e) {
+            base.OnMouseMove(e);
+
+            if (thumbDragging) {
+                // Calculate new scroll position based on thumb drag
+                int trackHeight = ClientSize.Height;
+                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
+
+                // Calculate new scroll position based on mouse position relative to thumb drag offset
+                int newScrollPosition = (int)(((float)(e.Y - thumbDragOffset) / (trackHeight - thumbHeight)) * (ContentHeight() - ClientSize.Height));
+
+                // Ensure new scroll position stays within valid range
+                scrollPosition = Math.Max(0, Math.Min(newScrollPosition, ContentHeight() - ClientSize.Height));
+
+                // Scroll the panel
+                PerformScroll();
+
+                Invalidate();
+            }
+        }
+
+        private void PerformScroll() {
+            // Calculate scroll percentage
+            float scrollPercentage = (float)scrollPosition / (ContentHeight() - ClientSize.Height);
+
+            // Scroll the panel
+            int maxScroll = ContentHeight() - ClientSize.Height;
+            int newScrollValue = (int)(scrollPercentage * (VerticalScroll.Maximum - VerticalScroll.Minimum));
+            VerticalScroll.Value = Math.Min(newScrollValue, maxScroll);
+        }
+
+
+        protected override void OnMouseUp(MouseEventArgs e) {
+            base.OnMouseUp(e);
+
+            if (e.Button == MouseButtons.Left) {
+                // Stop thumb dragging
+                thumbDragging = false;
+            }
+        }
+
+        private int ContentHeight() {
+            int totalHeight = 0;
+            foreach (Control control in Controls) {
+                totalHeight += control.Height;
+            }
+            return totalHeight;
         }
     }
 }

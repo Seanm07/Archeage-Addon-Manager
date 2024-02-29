@@ -47,7 +47,7 @@
             containerPanel = new System.Windows.Forms.Panel();
             statusPanel = new System.Windows.Forms.Panel();
             backupFilesButton = new System.Windows.Forms.Button();
-            backupListPanel = new System.Windows.Forms.Panel();
+            backupListPanel = new CustomPanel();
             bottomPanel.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
@@ -301,7 +301,7 @@
             backupListPanel.Location = new System.Drawing.Point(10, 110);
             backupListPanel.Name = "backupListPanel";
             backupListPanel.Size = new System.Drawing.Size(200, 180);
-            backupListPanel.TabIndex = 10;
+            backupListPanel.TabIndex = 0;
             // 
             // MainWindow
             // 
@@ -316,7 +316,6 @@
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
             Controls.Add(statusPanel);
-            DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;
@@ -357,9 +356,9 @@
         private System.Windows.Forms.Button minimiseWindowButton;
         private System.Windows.Forms.Panel containerPanel;
         private System.Windows.Forms.Button backupFilesButton;
-        private System.Windows.Forms.Panel backupListPanel;
         private System.Windows.Forms.Label latestPatchLabel;
         private System.Windows.Forms.Label installedPatchLabel;
+        private CustomPanel backupListPanel;
     }
 }
 

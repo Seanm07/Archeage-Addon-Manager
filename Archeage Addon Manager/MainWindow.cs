@@ -128,7 +128,7 @@ namespace Archeage_Addon_Manager {
                         string backupFileName = Path.GetFileNameWithoutExtension(backupFile);
 
                         // Create panel for each backup file
-                        Panel filePanel = new Panel() {
+                        Panel filePanel = new CustomPanel() {
                             Width = backupListPanelWidth,
                             Height = 30,
                             Location = new Point(0, 20 + ((backupListPanel.Controls.Count - 1) * 30)),
@@ -294,7 +294,7 @@ namespace Archeage_Addon_Manager {
             this.Cursor = Cursors.WaitCursor;
 
             if (loadingOverlayPanel == null) {
-                loadingOverlayPanel = new Panel() {
+                loadingOverlayPanel = new CustomPanel() {
                     Dock = DockStyle.Fill,
                     BackColor = Color.FromArgb(240, 33, 35, 38)
                 };
@@ -342,7 +342,7 @@ namespace Archeage_Addon_Manager {
         }
 
         public void ShowMessagePopup(string title, string message, string yesValue, Action yesCallback = default, string noValue = "", Action noCallback = default) {
-            Panel messagePopupPanel = new Panel() {
+            Panel messagePopupPanel = new CustomPanel() {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
@@ -435,7 +435,7 @@ namespace Archeage_Addon_Manager {
         public void DisplayLoginOverlay() {
             if (loginOverlayPanel != null) return;
 
-            loginOverlayPanel = new Panel() {
+            loginOverlayPanel = new CustomPanel() {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
@@ -524,7 +524,7 @@ namespace Archeage_Addon_Manager {
         public void ShowSettingsOverlay() {
             if (settingsOverlayPanel != null) return;
 
-            settingsOverlayPanel = new Panel() {
+            settingsOverlayPanel = new CustomPanel() {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
