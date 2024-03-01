@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -75,19 +74,74 @@ namespace Archeage_Addon_Manager {
         }
     }
 
+    public class CustomLabel : Label {
+        protected override CreateParams CreateParams {
+            get {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
+                return cp;
+            }
+        }
+
+        public CustomLabel() {
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
+            UpdateStyles();
+        }
+    }
+
+    public class CustomButton : Button {
+        protected override CreateParams CreateParams {
+            get {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
+                return cp;
+            }
+        }
+
+        public CustomButton() {
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
+            UpdateStyles();
+        }
+    }
+
     public class CustomPanel : Panel {
         [DllImport("user32.dll")]
         private static extern int ShowScrollBar(IntPtr hWnd, int wBar, int bShow);
 
         private const int SB_VERT = 1;
 
+        private int thumbMargin = 4;
         private int scrollPosition = 0; // Current scroll position
         private int scrollThumbSize = 50; // Size of the scrollbar thumb
         private bool thumbDragging = false;
         private int thumbDragOffset = 0;
 
+        private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL = 0x115;
+
+        protected override void WndProc(ref Message m) {
+            if ((m.Msg == WM_HSCROLL || m.Msg == WM_VSCROLL)
+            && (((int)m.WParam & 0xFFFF) == 5)) {
+                // Change SB_THUMBTRACK to SB_THUMBPOSITION
+                m.WParam = (IntPtr)(((int)m.WParam & ~0xFFFF) | 4);
+            }
+            base.WndProc(ref m);
+        }
+
+        protected override CreateParams CreateParams {
+            get {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
+                return cp;
+            }
+        }
+
         public CustomPanel() {
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+
+            UpdateStyles();
 
             // Hide the system default vertical scrollbar
             ShowScrollBar(Handle, SB_VERT, 0);
@@ -103,23 +157,24 @@ namespace Archeage_Addon_Manager {
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
 
-            int trackWidth = SystemInformation.VerticalScrollBarWidth; // Width of the vertical scroll area
-            int thumbMargin = 4; // Margin for the thumb
-            int thumbWidth = trackWidth - 2 * thumbMargin; // Width of the thumb excluding margins
-
-            // Custom drawing for scrollbar
-            using (var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38)))
-            using (var thumbBrush = new SolidBrush(Color.FromArgb(255, 255, 255, 255))) {
-                // Draw background for the vertical scroll area
-                e.Graphics.FillRectangle(bgBrush, ClientSize.Width - trackWidth, 0, trackWidth, ClientSize.Height);
-
-                // Calculate thumb position and size
+            if (AutoScroll) {
+                int trackWidth = SystemInformation.VerticalScrollBarWidth;
                 int trackHeight = ClientSize.Height;
-                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
-                int thumbPos = (int)((float)scrollPosition / (ContentHeight() - ClientSize.Height) * (trackHeight - thumbHeight));
 
-                // Draw thumb
-                e.Graphics.FillRectangle(thumbBrush, ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight - (thumbMargin * 2));
+                int thumbWidth = trackWidth - (thumbMargin * 2);
+
+                var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38));
+                var thumbBrush = new SolidBrush(Color.White);
+
+                e.Graphics.FillRectangle(bgBrush, ClientSize.Width - trackWidth, 0, trackWidth, trackHeight);
+
+                int thumbHeight = Math.Max(trackHeight * trackHeight / ContentHeight(), scrollThumbSize) - (thumbMargin * 2);
+                int thumbPos = scrollPosition * (trackHeight - thumbHeight) / (ContentHeight() - trackHeight);
+
+                e.Graphics.FillRectangle(thumbBrush, ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight);
+
+                bgBrush.Dispose();
+                thumbBrush.Dispose();
             }
         }
 

@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent() {
             InstallButton = new System.Windows.Forms.Button();
-            panel1 = new System.Windows.Forms.Panel();
             bottomPanel = new System.Windows.Forms.Panel();
             latestPatchLabel = new System.Windows.Forms.Label();
             installedPatchLabel = new System.Windows.Forms.Label();
@@ -44,14 +43,13 @@
             windowDragPanel = new System.Windows.Forms.Panel();
             minimiseWindowButton = new System.Windows.Forms.Button();
             closeWindowButton = new System.Windows.Forms.Button();
-            containerPanel = new System.Windows.Forms.Panel();
             statusPanel = new System.Windows.Forms.Panel();
             backupFilesButton = new System.Windows.Forms.Button();
             backupListPanel = new CustomPanel();
+            panel1 = new CustomPanel();
             bottomPanel.SuspendLayout();
             menuStrip1.SuspendLayout();
             windowDragPanel.SuspendLayout();
-            containerPanel.SuspendLayout();
             SuspendLayout();
             // 
             // InstallButton
@@ -70,18 +68,6 @@
             InstallButton.Text = "APPLY\r\nPATCHES";
             InstallButton.UseVisualStyleBackColor = false;
             InstallButton.Click += InstallButtonClick;
-            // 
-            // panel1
-            // 
-            panel1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            panel1.AutoScroll = true;
-            panel1.BackColor = System.Drawing.Color.Transparent;
-            panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            panel1.Location = new System.Drawing.Point(10, 10);
-            panel1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(370, 328);
-            panel1.TabIndex = 2;
             // 
             // bottomPanel
             // 
@@ -260,15 +246,6 @@
             closeWindowButton.UseVisualStyleBackColor = false;
             closeWindowButton.Click += CloseButtonClick;
             // 
-            // containerPanel
-            // 
-            containerPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
-            containerPanel.Controls.Add(panel1);
-            containerPanel.Location = new System.Drawing.Point(220, 40);
-            containerPanel.Name = "containerPanel";
-            containerPanel.Size = new System.Drawing.Size(390, 348);
-            containerPanel.TabIndex = 8;
-            // 
             // statusPanel
             // 
             statusPanel.BackColor = System.Drawing.Color.Transparent;
@@ -303,6 +280,16 @@
             backupListPanel.Size = new System.Drawing.Size(200, 180);
             backupListPanel.TabIndex = 0;
             // 
+            // panel1
+            // 
+            panel1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            panel1.AutoScroll = true;
+            panel1.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
+            panel1.Location = new System.Drawing.Point(220, 40);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(390, 348);
+            panel1.TabIndex = 10;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -310,12 +297,13 @@
             BackgroundImage = Properties.Resources.bg;
             ClientSize = new System.Drawing.Size(620, 480);
             ControlBox = false;
+            Controls.Add(panel1);
             Controls.Add(backupListPanel);
             Controls.Add(backupFilesButton);
-            Controls.Add(containerPanel);
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
             Controls.Add(statusPanel);
+            DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;
@@ -332,14 +320,12 @@
             menuStrip1.PerformLayout();
             windowDragPanel.ResumeLayout(false);
             windowDragPanel.PerformLayout();
-            containerPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
         private System.Windows.Forms.Button InstallButton;
-        private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
@@ -354,11 +340,11 @@
         private System.Windows.Forms.Button closeWindowButton;
         private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Button minimiseWindowButton;
-        private System.Windows.Forms.Panel containerPanel;
         private System.Windows.Forms.Button backupFilesButton;
         private System.Windows.Forms.Label latestPatchLabel;
         private System.Windows.Forms.Label installedPatchLabel;
         private CustomPanel backupListPanel;
+        private CustomPanel panel1;
     }
 }
 
