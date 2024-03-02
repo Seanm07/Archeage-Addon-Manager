@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -114,12 +115,14 @@ namespace Archeage_Addon_Manager {
 
         private int thumbMargin = 4;
         private int scrollPosition = 0; // Current scroll position
-        private int scrollThumbSize = 50; // Size of the scrollbar thumb
         private bool thumbDragging = false;
         private int thumbDragOffset = 0;
 
         private const int WM_HSCROLL = 0x114;
         private const int WM_VSCROLL = 0x115;
+
+        private int scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight;
+        private int panelContentsHeight, thumbWidth, thumbHeight, thumbPos;
 
         protected override void WndProc(ref Message m) {
             if ((m.Msg == WM_HSCROLL || m.Msg == WM_VSCROLL)
@@ -140,38 +143,51 @@ namespace Archeage_Addon_Manager {
 
         public CustomPanel() {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
-            UpdateStyles();
-
-            // Hide the system default vertical scrollbar
-            ShowScrollBar(Handle, SB_VERT, 0);
         }
 
         protected override void OnSizeChanged(EventArgs e) {
-            base.OnSizeChanged(e);
+            //base.OnSizeChanged(e);
 
             // Hide the system default vertical scrollbar
             ShowScrollBar(Handle, SB_VERT, 0);
+
+            scrollBgX = Width - SystemInformation.VerticalScrollBarWidth;
+            scrollBgY = 0;
+            scrollBgWidth = SystemInformation.VerticalScrollBarWidth;
+            scrollBgHeight = Height;
+
+            thumbWidth = scrollBgWidth - (thumbMargin * 2);
+            thumbHeight = (int)((float)scrollBgHeight * ((float)scrollBgHeight / (float)panelContentsHeight));
+
+            PerformScroll();
+        }
+
+        private void PerformScroll() {
+            panelContentsHeight = ContentHeight();
+
+            if (panelContentsHeight > 0) {
+                thumbPos = (int)((float)scrollPosition * ((float)scrollBgHeight - (float)thumbHeight) / ((float)panelContentsHeight - (float)scrollBgHeight));
+
+                // Calculate scroll percentage
+                float scrollPercentage = (float)scrollPosition / ((float)panelContentsHeight - (float)Height);
+
+                // Scroll the panel
+                VerticalScroll.Value = (int)(scrollPercentage * (VerticalScroll.Maximum - VerticalScroll.Minimum));
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
 
-            if (AutoScroll) {
-                int trackWidth = SystemInformation.VerticalScrollBarWidth;
-                int trackHeight = ClientSize.Height;
-
-                int thumbWidth = trackWidth - (thumbMargin * 2);
-
+            if (AutoScroll && panelContentsHeight > thumbHeight) {
                 var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38));
                 var thumbBrush = new SolidBrush(Color.White);
 
-                e.Graphics.FillRectangle(bgBrush, ClientSize.Width - trackWidth, 0, trackWidth, trackHeight);
+                // Draw the scrollbar background
+                e.Graphics.FillRectangle(bgBrush, scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight);
 
-                int thumbHeight = Math.Max(trackHeight * trackHeight / ContentHeight(), scrollThumbSize) - (thumbMargin * 2);
-                int thumbPos = scrollPosition * (trackHeight - thumbHeight) / (ContentHeight() - trackHeight);
-
-                e.Graphics.FillRectangle(thumbBrush, ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight);
+                // Draw the scrollbar thumb
+                e.Graphics.FillRectangle(thumbBrush, scrollBgX + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight - (thumbMargin * 2));
 
                 bgBrush.Dispose();
                 thumbBrush.Dispose();
@@ -179,18 +195,26 @@ namespace Archeage_Addon_Manager {
         }
 
         protected override void OnMouseWheel(MouseEventArgs e) {
-            base.OnMouseWheel(e);
+            //base.OnMouseWheel(e);
 
-            int scrollAmount = SystemInformation.MouseWheelScrollLines * e.Delta;
-            scrollPosition = Math.Max(0, Math.Min(scrollPosition - scrollAmount, ContentHeight() - ClientSize.Height));
+            int scrollAmount = e.Delta;//SystemInformation.MouseWheelScrollLines * e.Delta;
+            int maxScroll = panelContentsHeight - scrollBgHeight;
+            scrollPosition = scrollPosition - scrollAmount <= 0 ? 0 : scrollPosition - scrollAmount >= maxScroll ? maxScroll : scrollPosition - scrollAmount;
+            //Math.Max(0, Math.Min(scrollPosition - scrollAmount, panelHeight - ClientSize.Height));
+
+            // Force a repaint
+            PerformScroll();
 
             Invalidate();
+
+            // Workaround for small scrolls not updating the child panels even when invalidating or refreshing
+            OnVisibleChanged(EventArgs.Empty);
         }
 
         protected override void OnMouseDown(MouseEventArgs e) {
             base.OnMouseDown(e);
 
-            if (e.Button == MouseButtons.Left) {
+            /*if (e.Button == MouseButtons.Left) {
                 // Calculate thumb position and size
                 int trackHeight = ClientSize.Height;
                 int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
@@ -211,13 +235,13 @@ namespace Archeage_Addon_Manager {
                     thumbDragging = true;
                     thumbDragOffset = e.Y - thumbBounds.Top;
                 }
-            }
+            }*/
         }
 
         protected override void OnMouseMove(MouseEventArgs e) {
             base.OnMouseMove(e);
 
-            if (thumbDragging) {
+            /*if (thumbDragging) {
                 // Calculate new scroll position based on thumb drag
                 int trackHeight = ClientSize.Height;
                 int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
@@ -232,18 +256,10 @@ namespace Archeage_Addon_Manager {
                 PerformScroll();
 
                 Invalidate();
-            }
+            }*/
         }
 
-        private void PerformScroll() {
-            // Calculate scroll percentage
-            float scrollPercentage = (float)scrollPosition / (ContentHeight() - ClientSize.Height);
-
-            // Scroll the panel
-            int maxScroll = ContentHeight() - ClientSize.Height;
-            int newScrollValue = (int)(scrollPercentage * (VerticalScroll.Maximum - VerticalScroll.Minimum));
-            VerticalScroll.Value = Math.Min(newScrollValue, maxScroll);
-        }
+        
 
 
         protected override void OnMouseUp(MouseEventArgs e) {
@@ -256,6 +272,9 @@ namespace Archeage_Addon_Manager {
         }
 
         private int ContentHeight() {
+            return 20 + (30 * 16);
+
+            // TODO: This is broken and doesn't return the correct height
             int totalHeight = 0;
             foreach (Control control in Controls) {
                 totalHeight += control.Height;

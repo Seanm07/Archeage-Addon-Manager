@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -126,6 +127,8 @@ namespace Archeage_Addon_Manager {
                         if (backupFileExtension != ".game_pak_backup") continue;
 
                         string backupFileName = Path.GetFileNameWithoutExtension(backupFile);
+
+                        Debug.WriteLine("Making file: " + backupListPanel.Controls.Count);
 
                         // Create panel for each backup file
                         Panel filePanel = new CustomPanel() {
