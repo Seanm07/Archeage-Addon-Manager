@@ -97,9 +97,11 @@ namespace Archeage_Addon_Manager {
                     ImageAlign = ContentAlignment.MiddleCenter
                 };
 
-                backupListPanel.Controls.Add(backupTitleLabel);
                 backupTitleLabel.Controls.Add(openInExplorerButton);
                 backupTitleLabel.Controls.Add(refreshButton);
+
+                backupListPanel.Controls.Add(backupTitleLabel);
+                
 
                 openInExplorerButton.Click += (sender, e) => {
                     WebRequest.ExternalOpenURL(backupDirectory);
@@ -131,11 +133,11 @@ namespace Archeage_Addon_Manager {
                         Debug.WriteLine("Making file: " + backupListPanel.Controls.Count);
 
                         // Create panel for each backup file
-                        Panel filePanel = new CustomPanel() {
+                        CustomPanel filePanel = new CustomPanel() {
                             Width = backupListPanelWidth,
                             Height = 30,
                             Location = new Point(0, 20 + ((backupListPanel.Controls.Count - 1) * 30)),
-                            BackColor = Color.FromArgb(150, 33, 35, 38)
+                            BackColor = Color.FromArgb(33, 35, 38)
                         };
 
                         // Create label for file name

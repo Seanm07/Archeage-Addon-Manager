@@ -43,7 +43,6 @@
             windowDragPanel = new System.Windows.Forms.Panel();
             minimiseWindowButton = new System.Windows.Forms.Button();
             closeWindowButton = new System.Windows.Forms.Button();
-            statusPanel = new System.Windows.Forms.Panel();
             backupFilesButton = new System.Windows.Forms.Button();
             backupListPanel = new CustomPanel();
             panel1 = new CustomPanel();
@@ -246,16 +245,6 @@
             closeWindowButton.UseVisualStyleBackColor = false;
             closeWindowButton.Click += CloseButtonClick;
             // 
-            // statusPanel
-            // 
-            statusPanel.BackColor = System.Drawing.Color.Transparent;
-            statusPanel.BackgroundImage = Properties.Resources.daru_green;
-            statusPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            statusPanel.Location = new System.Drawing.Point(2, 296);
-            statusPanel.Name = "statusPanel";
-            statusPanel.Size = new System.Drawing.Size(140, 113);
-            statusPanel.TabIndex = 7;
-            // 
             // backupFilesButton
             // 
             backupFilesButton.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
@@ -277,7 +266,7 @@
             backupListPanel.BackColor = System.Drawing.Color.FromArgb(200, 33, 35, 38);
             backupListPanel.Location = new System.Drawing.Point(10, 110);
             backupListPanel.Name = "backupListPanel";
-            backupListPanel.Size = new System.Drawing.Size(200, 180);
+            backupListPanel.Size = new System.Drawing.Size(200, 278);
             backupListPanel.TabIndex = 0;
             // 
             // panel1
@@ -302,7 +291,6 @@
             Controls.Add(backupFilesButton);
             Controls.Add(windowDragPanel);
             Controls.Add(bottomPanel);
-            Controls.Add(statusPanel);
             DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -338,7 +326,6 @@
         private System.Windows.Forms.ToolStripMenuItem developerItemToolStripMenuItem;
         private System.Windows.Forms.Panel windowDragPanel;
         private System.Windows.Forms.Button closeWindowButton;
-        private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Button minimiseWindowButton;
         private System.Windows.Forms.Button backupFilesButton;
         private System.Windows.Forms.Label latestPatchLabel;

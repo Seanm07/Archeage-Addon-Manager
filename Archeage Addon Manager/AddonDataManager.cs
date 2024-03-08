@@ -66,10 +66,12 @@ namespace Archeage_Addon_Manager {
 
             // Create a horizontal group to contain each addon
             FlowLayoutPanel horizontalGroup = new FlowLayoutPanel() {
-                Dock = DockStyle.Top,
+                Dock = DockStyle.None, // Change DockStyle to None
                 Width = addonWidgetContainerPanel.Width - SystemInformation.VerticalScrollBarWidth,
-                AutoSize = true,
+                Height = 70,
                 BackColor = Color.FromArgb(33, 35, 38),
+                Location = new Point(0, (addonWidgetContainerPanel.Controls.Count * 70)),
+                Margin = new Padding(0, 0, 0, 0)
             };
 
             // Container for the checkbox so we can center it
@@ -122,16 +124,13 @@ namespace Archeage_Addon_Manager {
             horizontalGroup.Controls.Add(textGroup);
 
             // Create a spacer to separate each addon with a visual spacer
-            FlowLayoutPanel spacerPanel = new FlowLayoutPanel() {
-                Dock = DockStyle.Top,
-                Width = addonWidgetContainerPanel.Width - SystemInformation.VerticalScrollBarWidth,
+            FlowLayoutPanel bottomBorder = new FlowLayoutPanel() {
+                Dock = DockStyle.Bottom,
                 Height = 1,
                 BackColor = Color.FromArgb(21, 23, 26)
             };
 
-            // Controls added to the panel are added bottom to top based on the top dock style
-            // Add the spacer to the panel
-            addonWidgetContainerPanel.Controls.Add(spacerPanel);
+            horizontalGroup.Controls.Add(bottomBorder);
 
             // Add the horizontal group to the panel
             addonWidgetContainerPanel.Controls.Add(horizontalGroup);
