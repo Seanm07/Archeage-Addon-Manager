@@ -111,27 +111,13 @@ namespace Archeage_Addon_Manager {
         [DllImport("user32.dll")]
         private static extern int ShowScrollBar(IntPtr hWnd, int wBar, int bShow);
 
-        private const int SB_VERT = 1;
-
         private int thumbMargin = 4;
         private int scrollPosition = 0; // Current scroll position
         private bool thumbDragging = false;
         private int thumbDragOffset = 0;
 
-        private const int WM_HSCROLL = 0x114;
-        private const int WM_VSCROLL = 0x115;
-
         private int scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight;
         private int panelContentsHeight, thumbWidth, thumbHeight, thumbPos;
-
-        protected override void WndProc(ref Message m) {
-            if ((m.Msg == WM_HSCROLL || m.Msg == WM_VSCROLL)
-            && (((int)m.WParam & 0xFFFF) == 5)) {
-                // Change SB_THUMBTRACK to SB_THUMBPOSITION
-                m.WParam = (IntPtr)(((int)m.WParam & ~0xFFFF) | 4);
-            }
-            base.WndProc(ref m);
-        }
 
         protected override CreateParams CreateParams {
             get {
@@ -142,14 +128,18 @@ namespace Archeage_Addon_Manager {
         }
 
         public CustomPanel() {
-            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             this.Layout += LayoutReady;
         }
 
         // Called once the layout is ready and heights are no longer 0
-        private void LayoutReady(object sender, LayoutEventArgs e) {
+        private void LayoutReady(object? sender, LayoutEventArgs e) {
             RefreshLayout();
+
+            AutoScroll = false;
+            VerticalScroll.Enabled = false;
+            VerticalScroll.Visible = false;
         }
 
         private void RefreshLayout() {
@@ -169,11 +159,10 @@ namespace Archeage_Addon_Manager {
         }
 
         protected override void OnSizeChanged(EventArgs e) {
-            // Hide the system default vertical scrollbar
-            ShowScrollBar(Handle, SB_VERT, 0);
-
-            RefreshLayout();
+            PerformScroll();
         }
+
+        private int lastScrollValue = -1;
 
         private void PerformScroll() {
             thumbHeight = (int)((float)scrollBgHeight * ((float)scrollBgHeight / (float)panelContentsHeight));
@@ -182,16 +171,32 @@ namespace Archeage_Addon_Manager {
             // Calculate scroll percentage
             float scrollPercentage = (float)scrollPosition / ((float)panelContentsHeight - (float)Height);
 
-            // Scroll the panel
-            VerticalScroll.Value = (int)(scrollPercentage * (VerticalScroll.Maximum - Height - VerticalScroll.Minimum));
+            if(VerticalScroll.Maximum != Height)
+                VerticalScroll.Maximum = Height;
 
-            //Invalidate(true);
+            int scrollValue = (int)(scrollPercentage * VerticalScroll.Maximum);
+
+            if (scrollValue != lastScrollValue || VerticalScroll.Value != scrollValue) {
+                lastScrollValue = scrollValue;
+
+                
+                VerticalScroll.Value = scrollValue;
+            }
+
+            // This needs to be called again when releasing the scrollbar otherwise the windows scrollbar blocks the custom scrollbar again
+            _ = ShowScrollBar(Handle, 1, 0); // ID 1 is vertical scrollbar
+
+            // Workaround for small scrolls not updating the child panels even when invalidating or refreshing
+            OnVisibleChanged(EventArgs.Empty);
+
+            AutoScroll = false;
+            VerticalScroll.Visible = false;
         }
 
         protected override void OnPaint(PaintEventArgs e) {
-            //base.OnPaint(e);
+            base.OnPaint(e);
 
-            if (AutoScroll && panelContentsHeight > thumbHeight) {
+            if (panelContentsHeight > thumbHeight) {
                 // Draw the scrollbar background
                 using (var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38)))
                     e.Graphics.FillRectangle(bgBrush, scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight);
@@ -202,37 +207,28 @@ namespace Archeage_Addon_Manager {
             }
         }
 
+        private int lastScroll = -1;
+
         protected override void OnMouseWheel(MouseEventArgs e) {
+            // Don't run the base mouse wheel event otherwise it can glitch making the windows default scroll reappear
             //base.OnMouseWheel(e);
 
-            int scrollAmount = e.Delta;//SystemInformation.MouseWheelScrollLines * e.Delta;
-            int maxScroll = panelContentsHeight - scrollBgHeight;
-            scrollPosition = Math.Max(0, Math.Min(scrollPosition - scrollAmount, maxScroll));
+            scrollPosition = Math.Max(0, Math.Min(scrollPosition - e.Delta, panelContentsHeight - scrollBgHeight));
 
-            // Force a repaint
-            PerformScroll();
+            if (scrollPosition != lastScroll) {
+                lastScroll = scrollPosition;
 
-            // Workaround for small scrolls not updating the child panels even when invalidating or refreshing
-            OnVisibleChanged(EventArgs.Empty);
+                // Force a repaint
+                PerformScroll();
+            }
         }
 
         protected override void OnMouseDown(MouseEventArgs e) {
-            base.OnMouseDown(e);
+            if (e.Button == MouseButtons.Left) {
+                // Get the scroll bounds of the thumb and store it in a rectangle
+                Rectangle thumbBounds = new Rectangle(scrollBgX, thumbPos, scrollBgWidth, thumbHeight);
 
-            /*if (e.Button == MouseButtons.Left) {
-                // Calculate thumb position and size
-                int trackHeight = ClientSize.Height;
-                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
-                int thumbPos = (int)((float)scrollPosition / (ContentHeight() - ClientSize.Height) * (trackHeight - thumbHeight));
-
-                int thumbMargin = 2; // Margin for the thumb
-                int trackWidth = SystemInformation.VerticalScrollBarWidth; // Width of the vertical scroll area
-
-
-                // TODO: Rework and cleanup, doesn't work
-                // Calculate thumb bounds including margin
-                Rectangle thumbBounds = new Rectangle(ClientSize.Width - trackWidth + thumbMargin, thumbPos + thumbMargin,
-                                                       trackWidth - 2 * thumbMargin, thumbHeight - 2 * thumbMargin);
+                Debug.WriteLine(thumbBounds);
 
                 // Check if the mouse is within the thumb bounds
                 if (thumbBounds.Contains(e.Location)) {
@@ -240,46 +236,41 @@ namespace Archeage_Addon_Manager {
                     thumbDragging = true;
                     thumbDragOffset = e.Y - thumbBounds.Top;
                 }
-            }*/
-        }
 
-        protected override void OnMouseMove(MouseEventArgs e) {
-            base.OnMouseMove(e);
-
-            /*if (thumbDragging) {
-                // Calculate new scroll position based on thumb drag
-                int trackHeight = ClientSize.Height;
-                int thumbHeight = Math.Max((int)((float)ClientSize.Height / ContentHeight() * trackHeight), scrollThumbSize);
-
-                // Calculate new scroll position based on mouse position relative to thumb drag offset
-                int newScrollPosition = (int)(((float)(e.Y - thumbDragOffset) / (trackHeight - thumbHeight)) * (ContentHeight() - ClientSize.Height));
-
-                // Ensure new scroll position stays within valid range
-                scrollPosition = Math.Max(0, Math.Min(newScrollPosition, ContentHeight() - ClientSize.Height));
-
-                // Scroll the panel
                 PerformScroll();
-
-                Invalidate();
-            }*/
+            }
         }
-
-        
-
 
         protected override void OnMouseUp(MouseEventArgs e) {
-            base.OnMouseUp(e);
-
             if (e.Button == MouseButtons.Left) {
-                // Stop thumb dragging
                 thumbDragging = false;
+
+                PerformScroll();
+            }
+        }
+
+        private int lastScrollPositionSync = 0;
+
+        protected override void OnMouseMove(MouseEventArgs e) {
+            //base.OnMouseMove(e);
+
+            if (thumbDragging) {
+                // Calculate new scroll position based on thumb drag
+                scrollPosition = Math.Max(0, Math.Min((int)(((float)(e.Y - thumbDragOffset) / (float)(scrollBgHeight - thumbHeight)) * (float)(panelContentsHeight - scrollBgHeight)), panelContentsHeight - scrollBgHeight));
+
+                // If the difference between scrollPosition and lastScrollPositionSync is greater than 20 or we hit the top/bottom, sync the scroll position
+                if (lastScrollPositionSync != scrollPosition && Math.Abs(scrollPosition - lastScrollPositionSync) > 20 || (scrollPosition == 0 && lastScrollPositionSync != 0) || (scrollPosition == panelContentsHeight - scrollBgHeight && lastScrollPositionSync != panelContentsHeight - scrollBgHeight)) {
+                    lastScrollPositionSync = scrollPosition;
+
+                    // Force a repaint
+                    PerformScroll();
+                }
             }
         }
 
         private int ContentHeight() {
-            //return 20 + (30 * 16);
-
             int totalHeight = 0;
+
             foreach (Control control in Controls)
                 if (control.Parent == this)
                     totalHeight += control.Height;

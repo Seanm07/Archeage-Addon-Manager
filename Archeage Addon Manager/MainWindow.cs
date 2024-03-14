@@ -60,7 +60,7 @@ namespace Archeage_Addon_Manager {
                 if(backupFileCount > 5)
                     backupListPanelWidth -= SystemInformation.VerticalScrollBarWidth;
 
-                Label backupTitleLabel = new CustomLabel() {
+                CustomLabel backupTitleLabel = new CustomLabel() {
                     Width = backupListPanelWidth,
                     Height = 20,
                     Location = new Point(0, 0),
@@ -71,7 +71,7 @@ namespace Archeage_Addon_Manager {
                     BackColor = Color.FromArgb(255, 33, 35, 38)
                 };
 
-                Button openInExplorerButton = new CustomButton() {
+                CustomButton openInExplorerButton = new CustomButton() {
                     Width = 20,
                     Height = 20,
                     Location = new Point(backupListPanelWidth - 20, 0),
@@ -84,7 +84,7 @@ namespace Archeage_Addon_Manager {
                     ImageAlign = ContentAlignment.MiddleCenter
                 };
 
-                Button refreshButton = new CustomButton() {
+                CustomButton refreshButton = new CustomButton() {
                     Width = 20,
                     Height = 20,
                     Location = new Point(backupListPanelWidth - 40, 0),
@@ -141,7 +141,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create label for file name
-                        Label nameLabel = new CustomLabel() {
+                        CustomLabel nameLabel = new CustomLabel() {
                             Width = filePanel.Width - 70,
                             Height = 13,
                             Location = new Point(2, 2),
@@ -153,7 +153,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create label for file creation date
-                        Label dateLabel = new CustomLabel() {
+                        CustomLabel dateLabel = new CustomLabel() {
                             Width = filePanel.Width - 70,
                             Height = 13,
                             Location = new Point(2, 15),
@@ -165,7 +165,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create delete button
-                        Button deleteButton = new CustomButton() {
+                        CustomButton deleteButton = new CustomButton() {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 60, 0),
@@ -179,7 +179,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create restore button
-                        Button restoreButton = new CustomButton() {
+                        CustomButton restoreButton = new CustomButton() {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 30, 0),
@@ -226,7 +226,7 @@ namespace Archeage_Addon_Manager {
 
                 if(backupListPanel.Controls.Count <= 1) {
                     // Backup directory does not exist yet, just show a label saying no backups exist yet
-                    Label noBackupsLabel = new CustomLabel() {
+                    CustomLabel noBackupsLabel = new CustomLabel() {
                         Width = backupListPanelWidth,
                         Height = backupListPanel.Height - 20,
                         Location = new Point(0, 20),
@@ -241,7 +241,7 @@ namespace Archeage_Addon_Manager {
                 }
             } else {
                 // Invalid game directory
-                Label invalidGameDirectoryLabel = new CustomLabel() {
+                CustomLabel invalidGameDirectoryLabel = new CustomLabel() {
                     Width = backupListPanelWidth,
                     Height = backupListPanel.Height,
                     Location = new Point(0, 0),
