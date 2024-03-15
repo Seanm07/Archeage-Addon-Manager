@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -145,17 +146,21 @@ namespace Archeage_Addon_Manager {
             thumbWidth = scrollBgWidth - (thumbMargin * 2);
             thumbHeight = (int)((float)scrollBgHeight * ((float)scrollBgHeight / (float)panelContentsHeight));
 
-            // This needs to be called again when releasing the scrollbar otherwise the windows scrollbar blocks the custom scrollbar again
+            // Temporarily enable autoscroll to force the contents to follow the scroll value
+            AutoScroll = true;
+
+            // Force hide the windows default scrollbar
             _ = ShowScrollBar(Handle, 1, 0); // ID 1 is vertical scrollbar
 
-            AutoScroll = true;
+            // Hide the vertical scrollbar
             VerticalScroll.Visible = false;
         }
 
         protected override void OnSizeChanged(EventArgs e) {
-            // This needs to be called again when releasing the scrollbar otherwise the windows scrollbar blocks the custom scrollbar again
+            // Force hide the windows default scrollbar when a size change event happens 
             _ = ShowScrollBar(Handle, 1, 0); // ID 1 is vertical scrollbar
 
+            // On size change event disable autoscroll to fix a bug with the windows default scrollbar flickering
             AutoScroll = false;
         }
 
@@ -167,8 +172,11 @@ namespace Archeage_Addon_Manager {
             float scrollPercentage = (float)scrollPosition / ((float)panelContentsHeight - (float)thumbHeight);
             int scrollY = (int)(scrollPercentage * VerticalScroll.Maximum);
 
-            AutoScrollPosition = new Point(0, scrollY);
-            VerticalScroll.Value = scrollY;
+            // Clamp minimum value at 1 otherwise it doesn't bother updating the scroll when setting it to 0
+            VerticalScroll.Value = Math.Max(scrollY, 1);
+
+            // Force refresh the panel contents to update to the current scroll value
+            Refresh();
         }
 
         protected override void OnPaint(PaintEventArgs e) {
@@ -186,6 +194,7 @@ namespace Archeage_Addon_Manager {
         protected override void OnMouseWheel(MouseEventArgs e) {
             base.OnMouseWheel(e);
             
+            // The default scroll delta was too fast so this reduces it
             float scrollChange = e.Delta * 0.5f;
 
             scrollPosition = Math.Max(0f, Math.Min(scrollPosition - scrollChange, panelContentsHeight - scrollBgHeight));
@@ -206,9 +215,23 @@ namespace Archeage_Addon_Manager {
                     // Start dragging the thumb
                     thumbDragging = true;
                     thumbDragOffset = e.Y - thumbBounds.Top;
-                }
+                } else {
+                    // Check if the user clicked somewhere else on the bar background
+                    Rectangle scrollBgBounds = new Rectangle(scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight);
 
-                PerformScroll();
+                    if (scrollBgBounds.Contains(e.Location)) {
+                        // Jump the scroll position to the clicked position
+                        float minScroll = 0f;
+                        float maxScroll = panelContentsHeight - scrollBgHeight;
+                        float scrollAmount = (e.Location.Y - (thumbHeight / 2)) / (float)(scrollBgHeight - thumbHeight) * maxScroll;
+
+                        // Calculate new scroll position based on thumb drag
+                        scrollPosition = Math.Max(minScroll, Math.Min(scrollAmount, maxScroll));
+
+                        // Sync the scroll to the current dragged scroll bar
+                        PerformScroll();
+                    }
+                }
             }
         }
 
@@ -218,6 +241,7 @@ namespace Archeage_Addon_Manager {
             if (e.Button == MouseButtons.Left) {
                 thumbDragging = false;
 
+                // Force sync the scroll on mouse click release to be safe
                 PerformScroll();
             }
         }
@@ -226,10 +250,14 @@ namespace Archeage_Addon_Manager {
             base.OnMouseMove(e);
 
             if (thumbDragging) {
-                // Calculate new scroll position based on thumb drag
-                scrollPosition = Math.Max(0f, Math.Min((((float)(e.Y - thumbDragOffset) / (float)(scrollBgHeight - thumbHeight)) * (float)(panelContentsHeight - scrollBgHeight)), panelContentsHeight - scrollBgHeight));
+                float minScroll = 0f;
+                float maxScroll = panelContentsHeight - scrollBgHeight;
+                float scrollAmount = (e.Y - thumbDragOffset) / (float)(scrollBgHeight - thumbHeight) * maxScroll;
 
-                // Force a repaint
+                // Calculate new scroll position based on thumb drag
+                scrollPosition = Math.Max(minScroll, Math.Min(scrollAmount, maxScroll));
+
+                // Sync the scroll to the current dragged scroll bar
                 PerformScroll();
             }
         }
