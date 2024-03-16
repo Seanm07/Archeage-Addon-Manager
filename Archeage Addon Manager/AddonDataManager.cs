@@ -51,98 +51,113 @@ namespace Archeage_Addon_Manager {
 
         // Visually display a widget for an addon in the addon list panel
         public void AddAddonWidget(AddonData addonData) {
-            string displayedAddonName = addonData.name.Length > 20 ? addonData.name.Substring(0, 20) + ".." : addonData.name;
-            string displayedAddonDescription = addonData.description.Length > 100 ? addonData.description.Substring(0, 100) + ".." : addonData.description;
+            string displayedAddonName = addonData.name.Length > 35 ? addonData.name.Substring(0, 35) + ".." : addonData.name;
+            string displayedAddonDescription = addonData.description.Length > 150 ? addonData.description.Substring(0, 150) + ".." : addonData.description;
             string displayedAddonVersion = addonData.version.ToString("N2");
-
-            // Insert a \n at the last space before the 50th character to prevent cutting off words
-            if(displayedAddonDescription.Length > 50) {
-                int lastSpaceIndex = displayedAddonDescription.LastIndexOf(' ', 50);
-                if (lastSpaceIndex != -1)
-                    displayedAddonDescription = displayedAddonDescription.Substring(0, lastSpaceIndex) + "\n" + displayedAddonDescription.Substring(lastSpaceIndex + 1);
-            }
 
             // Create a horizontal group to contain each addon
             FlowLayoutPanel horizontalGroup = new FlowLayoutPanel() {
-                Dock = DockStyle.None, // Change DockStyle to None
                 Width = addonWidgetContainerPanel.Width - SystemInformation.VerticalScrollBarWidth,
-                Height = 70,
+                Height = 90,
                 BackColor = Color.FromArgb(33, 35, 38),
-                Location = new Point(0, (addonWidgetContainerPanel.Controls.Count * 70)),
-                Margin = new Padding(0, 0, 0, 0)
-            };
-
-            // Container for the checkbox so we can center it
-            FlowLayoutPanel checkboxGroup = new FlowLayoutPanel() {
-                Dock = DockStyle.Left,
-                Width = 30,
-                Margin = new Padding(0, 0, 0, 0)
+                Margin = new Padding(0, 0, 0, 0),
+                Location = new Point(0, addonWidgetContainerPanel.Controls.Count * 85)
             };
 
             // Create a checkbox to select the addon for installation or to show already installed
             CheckBox addonCheckbox = new CheckBox() {
-                Width = 15,
-                AutoCheck = false
+                AutoCheck = false,
+                Padding = new Padding(5, 5, 0, 0),
+                BackColor = Color.Transparent
             };
 
-            // Add the checkbox to the checkboxGroup group
-            checkboxGroup.Controls.Add(addonCheckbox);
+            // Image preview
+            PictureBox addonPreview = new PictureBox() {
+                Width = horizontalGroup.Height - 10,
+                Height = horizontalGroup.Height - 10,
+                Margin = new Padding(5, 5, 0, 0),
+                //BackColor = Color.Red,
+                //Image = addonData.previewImage,
+                SizeMode = PictureBoxSizeMode.StretchImage
+            };
 
-            // Group to contain right side text labels
-            FlowLayoutPanel textGroup = new FlowLayoutPanel() {
-                Width = horizontalGroup.Width - checkboxGroup.Width,
-                Height = 50 + ((displayedAddonDescription.Split(new string[] { "\n" }, StringSplitOptions.None).Length - 1) * 15), // Set height based on newlines in description
-                Margin = new Padding(0, 0, 0, 0)
+            // TODO: Replace with actual addon thumbnail URL
+            AsyncLoadImageFromURL(addonPreview, "https://picsum.photos/" + addonPreview.Height);
+
+            // Add the checkbox to the checkboxGroup group
+            addonPreview.Controls.Add(addonCheckbox);
+
+            // Group to contain right side text labels and button
+            Panel textGroup = new Panel() {
+                Width = horizontalGroup.Width - addonPreview.Width - 10,
+                Height = horizontalGroup.Height - 10,
+                Margin = new Padding(5, 5, 0, 0)
             };
 
             // Title label which contains addon name, version and author
             Label titleLabel = new Label() {
                 Width = textGroup.Width,
+                Height = 20,
                 Font = new Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                Text = displayedAddonName + " - v" + displayedAddonVersion + " by " + addonData.author,
-                Margin = new Padding(0, 5, 0, 0),
-                ForeColor = Color.White
+                Text = displayedAddonName,
+                Margin = new Padding(5, 5, 0, 0),
+                ForeColor = Color.FromArgb(33, 35, 38),
+                BackColor = Color.White
+            };
+
+            // Version label
+            Label versionLabel = new Label() {
+                Width = 100,
+                Height = 12,
+                Font = new Font("Microsoft Sans Serif", 6, FontStyle.Regular),
+                Text = "Version: " + displayedAddonVersion,
+                Margin = new Padding(0, 0, 0, 0),
+                ForeColor = Color.LightGray,
+                //BackColor = Color.FromArgb(80, 80, 80),
+                Location = new Point(0, textGroup.Height - 12),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            // Author label
+            Label authorLabel = new Label() {
+                Width = textGroup.Width - versionLabel.Width,
+                Height = versionLabel.Height,
+                Font = new Font("Microsoft Sans Serif", 6, FontStyle.Regular),
+                Text = "Author: " + addonData.author,
+                Margin = new Padding(0, 0, 0, 0),
+                ForeColor = Color.LightGray,
+                //BackColor = versionLabel.BackColor,
+                Location = new Point(versionLabel.Width, versionLabel.Location.Y),
+                TextAlign = ContentAlignment.MiddleRight
             };
 
             // Description label displayed below the title label
             Label descriptionLabel = new Label() {
                 Width = textGroup.Width,
-                AutoSize = true,
+                Height = textGroup.Height - titleLabel.Height - versionLabel.Height,
                 Text = displayedAddonDescription,
                 Margin = new Padding(0, 0, 0, 0),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                Location = new Point(0, titleLabel.Height + 2)
             };
 
-            // Add the title and description labels to the right side text group
+            // Add controls to the textGroup
             textGroup.Controls.Add(titleLabel);
+            textGroup.Controls.Add(versionLabel);
+            textGroup.Controls.Add(authorLabel);
             textGroup.Controls.Add(descriptionLabel);
 
-            // Add the left side checkboxGroup and right side textGroup to the horizontal group
-            horizontalGroup.Controls.Add(checkboxGroup);
+            // Add the left side checkboxGroup, image preview, and right side textGroup to the horizontal group
+            horizontalGroup.Controls.Add(addonPreview);
             horizontalGroup.Controls.Add(textGroup);
-
-            // Create a spacer to separate each addon with a visual spacer
-            FlowLayoutPanel bottomBorder = new FlowLayoutPanel() {
-                Dock = DockStyle.Bottom,
-                Height = 1,
-                BackColor = Color.FromArgb(21, 23, 26)
-            };
-
-            horizontalGroup.Controls.Add(bottomBorder);
 
             // Add the horizontal group to the panel
             addonWidgetContainerPanel.Controls.Add(horizontalGroup);
-
-            // Vertically center the checkbox
-            int verticalMargin = (checkboxGroup.Height - addonCheckbox.Height) / 2;
-            int horizontalMargin = (checkboxGroup.Width - addonCheckbox.Width) / 2;
-            addonCheckbox.Margin = new Padding(horizontalMargin, verticalMargin, horizontalMargin, verticalMargin);
 
             int curId = addonWidgets.Count;
 
             // Register click events on all controls so clicking anything checks/unchecks the checkbox
             horizontalGroup.Click += (sender, e) => MainWindow.instance.OnClickAddonWidget(curId);
-            checkboxGroup.Click += (sender, e) => MainWindow.instance.OnClickAddonWidget(curId);
             addonCheckbox.Click += (sender, e) => MainWindow.instance.OnClickAddonWidget(curId);
             textGroup.Click += (sender, e) => MainWindow.instance.OnClickAddonWidget(curId);
             titleLabel.Click += (sender, e) => MainWindow.instance.OnClickAddonWidget(curId);
@@ -153,6 +168,18 @@ namespace Archeage_Addon_Manager {
                 checkbox = addonCheckbox,
                 titleLabel = titleLabel,
                 descriptionLabel = descriptionLabel
+            });
+        }
+
+        public async void AsyncLoadImageFromURL(PictureBox pictureBox, string imageUrl) {
+            await new WebRequest().DownloadImageFromUrl(imageUrl, (image) => {
+                if (image != null) {
+                    // Image downloaded successfully, assign it to the PictureBox
+                    pictureBox.Image = image;
+                } else {
+                    // Handle case where image download failed
+                    Console.WriteLine("Image download failed.");
+                }
             });
         }
 

@@ -36,7 +36,11 @@ namespace Archeage_Addon_Manager {
 
         public void UpdatePatchInfoLabels() {
             installedPatchLabel.Text = "Patch version installed: " + GameVersionManager.GetInstalledGameVersion(false) + " (" + GameVersionManager.GetInstalledGameVersion(true) + ")";
-            latestPatchLabel.Text = "Latest patch version: " + GameVersionManager.GetExpectedGameVersion(false) + " (" + GameVersionManager.GetExpectedGameVersion(true) + ")";
+            GameVersionManager.RequestLatestGameVersion();
+        }
+
+        public void SetLatestPatchLabel() {
+            latestPatchLabel.Text = "Latest patch version: " + GameVersionManager.GetLatestGameVersion(false) + " (" + GameVersionManager.GetLatestGameVersion(true) + ")";
         }
 
         public void UpdateBackupList() {

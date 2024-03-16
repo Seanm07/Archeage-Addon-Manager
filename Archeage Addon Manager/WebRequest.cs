@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Archeage_Addon_Manager {
     public class WebRequest {
@@ -50,6 +51,22 @@ namespace Archeage_Addon_Manager {
             // Invoke the callback with the response content
             callback(content);
         }
+
+        public async Task DownloadImageFromUrl(string imageUrl, Action<Image> callback) {
+            using var httpClient = new HttpClient();
+
+            // Download image bytes asynchronously
+            byte[] imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
+
+            // Convert bytes to Image
+            using (MemoryStream ms = new MemoryStream(imageBytes)) {
+                Image image = Image.FromStream(ms);
+
+                // Invoke the callback with the downloaded image
+                callback(image);
+            }
+        }
+
 
         public static void ExternalOpenURL(string url) {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
