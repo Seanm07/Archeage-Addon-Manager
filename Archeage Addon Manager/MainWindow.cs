@@ -60,7 +60,7 @@ namespace Archeage_Addon_Manager {
                 if(backupFileCount > 5)
                     backupListPanelWidth -= SystemInformation.VerticalScrollBarWidth;
 
-                CustomLabel backupTitleLabel = new CustomLabel() {
+                Label backupTitleLabel = new Label() {
                     Width = backupListPanelWidth,
                     Height = 20,
                     Location = new Point(0, 0),
@@ -71,7 +71,7 @@ namespace Archeage_Addon_Manager {
                     BackColor = Color.FromArgb(255, 33, 35, 38)
                 };
 
-                CustomButton openInExplorerButton = new CustomButton() {
+                Button openInExplorerButton = new Button() {
                     Width = 20,
                     Height = 20,
                     Location = new Point(backupListPanelWidth - 20, 0),
@@ -84,7 +84,7 @@ namespace Archeage_Addon_Manager {
                     ImageAlign = ContentAlignment.MiddleCenter
                 };
 
-                CustomButton refreshButton = new CustomButton() {
+                Button refreshButton = new Button() {
                     Width = 20,
                     Height = 20,
                     Location = new Point(backupListPanelWidth - 40, 0),
@@ -141,7 +141,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create label for file name
-                        CustomLabel nameLabel = new CustomLabel() {
+                        Label nameLabel = new Label() {
                             Width = filePanel.Width - 70,
                             Height = 13,
                             Location = new Point(2, 2),
@@ -153,7 +153,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create label for file creation date
-                        CustomLabel dateLabel = new CustomLabel() {
+                        Label dateLabel = new Label() {
                             Width = filePanel.Width - 70,
                             Height = 13,
                             Location = new Point(2, 15),
@@ -165,7 +165,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create delete button
-                        CustomButton deleteButton = new CustomButton() {
+                        Button deleteButton = new Button() {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 60, 0),
@@ -179,7 +179,7 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Create restore button
-                        CustomButton restoreButton = new CustomButton() {
+                        Button restoreButton = new Button() {
                             Width = 30,
                             Height = 30,
                             Location = new Point(filePanel.Width - 30, 0),
@@ -226,7 +226,7 @@ namespace Archeage_Addon_Manager {
 
                 if(backupListPanel.Controls.Count <= 1) {
                     // Backup directory does not exist yet, just show a label saying no backups exist yet
-                    CustomLabel noBackupsLabel = new CustomLabel() {
+                    Label noBackupsLabel = new Label() {
                         Width = backupListPanelWidth,
                         Height = backupListPanel.Height - 20,
                         Location = new Point(0, 20),
@@ -241,7 +241,7 @@ namespace Archeage_Addon_Manager {
                 }
             } else {
                 // Invalid game directory
-                CustomLabel invalidGameDirectoryLabel = new CustomLabel() {
+                Label invalidGameDirectoryLabel = new Label() {
                     Width = backupListPanelWidth,
                     Height = backupListPanel.Height,
                     Location = new Point(0, 0),
@@ -304,7 +304,7 @@ namespace Archeage_Addon_Manager {
                     BackColor = Color.FromArgb(240, 33, 35, 38)
                 };
 
-                Label loadingLabel = new CustomLabel() {
+                Label loadingLabel = new Label() {
                     Width = this.Width,
                     Height = 25,
                     Location = new Point(0, (this.Height - 25) / 2 - 35),
@@ -315,7 +315,7 @@ namespace Archeage_Addon_Manager {
                     BackColor = Color.Transparent
                 };
 
-                Label subLoadingLabel = new CustomLabel() {
+                Label subLoadingLabel = new Label() {
                     Width = this.Width,
                     Height = 20,
                     Location = new Point(0, (this.Height - 20) / 2),
@@ -352,7 +352,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
 
-            Label titleLabel = new CustomLabel() {
+            Label titleLabel = new Label() {
                 Width = this.Width,
                 Height = 25,
                 Location = new Point(0, (this.Height - 25) / 2 - 60),
@@ -363,7 +363,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.Transparent
             };
 
-            Label messageLabel = new CustomLabel() {
+            Label messageLabel = new Label() {
                 Width = this.Width - 40,
                 MinimumSize = new Size(this.Width - 40, 0),
                 MaximumSize = new Size(this.Width - 40, 0),
@@ -389,7 +389,7 @@ namespace Archeage_Addon_Manager {
             if (yesValue != "") {
                 bool singleButtonMode = noValue == "";
 
-                Button yesButton = new CustomButton() {
+                Button yesButton = new Button() {
                     Width = singleButtonMode ? 200 : 100,
                     Height = 30,
                     Location = new Point((this.Width - (singleButtonMode ? 200 : 100)) / 2 - (singleButtonMode ? 0 : 60), messageLabel.Bottom + 20),
@@ -408,7 +408,7 @@ namespace Archeage_Addon_Manager {
             }
 
             if (noValue != "") {
-                Button noButton = new CustomButton() {
+                Button noButton = new Button() {
                     Width = 100,
                     Height = 30,
                     Location = new Point((this.Width - 100) / 2 + 60, messageLabel.Bottom + 20),
@@ -445,7 +445,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
 
-            Label titleLabel = new CustomLabel() {
+            Label titleLabel = new Label() {
                 Width = 400,
                 Height = 20,
                 Location = new Point((this.Width - 400) / 2, (this.Height - 10) / 2 - 50),
@@ -456,7 +456,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.Transparent
             };
 
-            Label infoLabel = new CustomLabel() {
+            Label infoLabel = new Label() {
                 Width = 400,
                 Height = 20,
                 Location = new Point((this.Width - 400) / 2, (this.Height - 20) / 2 - 30),
@@ -474,7 +474,7 @@ namespace Archeage_Addon_Manager {
                 TextAlign = HorizontalAlignment.Center
             };
 
-            Button loginButton = new CustomButton() {
+            Button loginButton = new Button() {
                 Width = 100,
                 Height = 30,
                 Location = new Point((this.Width - 400) / 2 + 400 - 100, (this.Height - 20) / 2 + 30),
@@ -484,7 +484,7 @@ namespace Archeage_Addon_Manager {
                 FlatStyle = FlatStyle.Flat
             };
 
-            Button cancelButton = new CustomButton() {
+            Button cancelButton = new Button() {
                 Width = 100,
                 Height = 30,
                 Location = new Point((this.Width - 400) / 2, (this.Height - 20) / 2 + 30),
@@ -534,7 +534,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.FromArgb(240, 33, 35, 38)
             };
 
-            Label titleLabel = new CustomLabel() {
+            Label titleLabel = new Label() {
                 Width = this.Width,
                 Height = 25,
                 Location = new Point(0, windowDragPanel.Height + 20),
@@ -545,7 +545,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.Transparent
             };
 
-            Label pathLabel = new CustomLabel() {
+            Label pathLabel = new Label() {
                 Width = this.Width - 40,
                 Height = 20,
                 Location = new Point(20, titleLabel.Bottom + 20),
@@ -568,7 +568,7 @@ namespace Archeage_Addon_Manager {
             installationPathComboBox.Items.AddRange(installationPaths);
             installationPathComboBox.SelectedIndex = AddonDataManager.instance.GetActiveInstallationPathIndex();
 
-            Label sourcesLabel = new CustomLabel() {
+            Label sourcesLabel = new Label() {
                 Width = this.Width - 40,
                 Height = 20,
                 Location = new Point(20, installationPathComboBox.Bottom + 20),
@@ -587,7 +587,7 @@ namespace Archeage_Addon_Manager {
                 Text = String.Join("\r\n", AddonDataManager.instance.GetAddonSourcesList())
             };
 
-            Button closeButton = new CustomButton() {
+            Button closeButton = new Button() {
                 Width = 200,
                 Height = 30,
                 Location = new Point((this.Width - 200) / 2, sourcesTextBox.Bottom + 20),
@@ -597,7 +597,7 @@ namespace Archeage_Addon_Manager {
                 FlatStyle = FlatStyle.Flat
             };
 
-            Label versionLabel = new CustomLabel() {
+            Label versionLabel = new Label() {
                 Width = 100,
                 Height = 20,
                 Location = new Point(this.Width - 120, this.Height - 40),
@@ -608,7 +608,7 @@ namespace Archeage_Addon_Manager {
                 BackColor = Color.Transparent
             };
 
-            Button checkUpdatesButton = new CustomButton() {
+            Button checkUpdatesButton = new Button() {
                 Width = 150,
                 Height = 30,
                 Location = new Point(versionLabel.Left - 160, this.Height - 45),

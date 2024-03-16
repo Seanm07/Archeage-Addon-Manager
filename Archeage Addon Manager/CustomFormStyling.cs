@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -21,8 +19,8 @@ namespace Archeage_Addon_Manager {
 
             // I don't know why but unless we refresh twice after minimizing the window, the form doesn't redraw properly
             // Only happens due to the WS_EX_COMPOSITED custom form styling which fixes flickering when creating controls
-            this.Refresh();
-            this.Refresh();
+            Refresh();
+            Refresh();
         }
     }
 
@@ -33,8 +31,8 @@ namespace Archeage_Addon_Manager {
             ToolStripItem item = e.Item;
             Graphics g = e.Graphics;
 
-            Rectangle bounds = new Rectangle(Point.Empty, new Size(item.Width - 3, item.Height));
-            bounds.X += 2;
+            // Setup the bounds of our item to have a 2 pixel border around it
+            Rectangle bounds = new Rectangle(new Point(2, 0), new Size(item.Width - 3, item.Height));
 
             if (item.IsOnDropDown) {
                 // This is an item inside the dropdown
@@ -53,11 +51,10 @@ namespace Archeage_Addon_Manager {
                         g.FillRectangle(new SolidBrush(Color.FromArgb(100, 0, 0, 0)), bounds);
                 }
             }
-
-
         }
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
+            // Force all toolstrip text to be white
             e.TextColor = Color.White;
 
             base.OnRenderItemText(e);
@@ -65,46 +62,15 @@ namespace Archeage_Addon_Manager {
 
         protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e) {
             ToolStripItem item = e.Item;
-            Graphics g = e.Graphics;
 
+            // If the tooltip item has an image assigned, render it to the left of the label
             if (item.Image != null)
-                g.DrawImage(item.Image, new Rectangle(13, 4, 13, 13));
+                e.Graphics.DrawImage(item.Image, new Rectangle(13, 4, 13, 13));
         }
 
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) {
+            // Disable rendering of toolstrip borders (removes shadow on toolstrip dropdown menu items)
             //base.OnRenderToolStripBorder(e);
-        }
-    }
-
-    public class CustomLabel : Label {
-        protected override CreateParams CreateParams {
-            get {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
-                return cp;
-            }
-        }
-
-        public CustomLabel() {
-            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
-            UpdateStyles();
-        }
-    }
-
-    public class CustomButton : Button {
-        protected override CreateParams CreateParams {
-            get {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x02000000;  // Turn on WS_EX_COMPOSITED
-                return cp;
-            }
-        }
-
-        public CustomButton() {
-            SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
-            UpdateStyles();
         }
     }
 
@@ -129,12 +95,13 @@ namespace Archeage_Addon_Manager {
         }
 
         public CustomPanel() {
+            // Without double buffering the scrollbar flickers turning transparent when scrolling
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
             this.Layout += LayoutUpdate;
         }
 
-        // Called once the layout is ready and heights are no longer 0
+        // Called when inner layout updates (before this is initially called ContentHeight() will return 0)
         private void LayoutUpdate(object? sender, LayoutEventArgs e) {
             panelContentsHeight = ContentHeight();
 
@@ -214,6 +181,8 @@ namespace Archeage_Addon_Manager {
                 if (thumbBounds.Contains(e.Location)) {
                     // Start dragging the thumb
                     thumbDragging = true;
+
+                    // Keep track of where the cursor is relative to the thumb bar
                     thumbDragOffset = e.Y - thumbBounds.Top;
                 } else {
                     // Check if the user clicked somewhere else on the bar background
@@ -265,6 +234,7 @@ namespace Archeage_Addon_Manager {
         private int ContentHeight() {
             int totalHeight = 0;
 
+            // Sum the height of all panels in the root to get content size for scrollbar calculations
             foreach (Control control in Controls)
                 if (control.Parent == this)
                     totalHeight += control.Height;
