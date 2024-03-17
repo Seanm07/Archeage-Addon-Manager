@@ -61,7 +61,7 @@ namespace Archeage_Addon_Manager {
                 // Count how many files in backupDirectory have extension .game_pak_backup
                 int backupFileCount = Directory.GetFiles(backupDirectory, "*.game_pak_backup").Length;
 
-                if(backupFileCount > 5)
+                if (backupFileCount > 5)
                     backupListPanelWidth -= SystemInformation.VerticalScrollBarWidth;
 
                 Label backupTitleLabel = new Label() {
@@ -105,7 +105,7 @@ namespace Archeage_Addon_Manager {
                 backupTitleLabel.Controls.Add(refreshButton);
 
                 backupListPanel.Controls.Add(backupTitleLabel);
-                
+
 
                 openInExplorerButton.Click += (sender, e) => {
                     WebRequest.ExternalOpenURL(backupDirectory);
@@ -197,20 +197,18 @@ namespace Archeage_Addon_Manager {
                         };
 
                         // Add click event handlers for delete and restore buttons
-                        deleteButton.Click += (sender, e) =>
-                        {
-                            ShowMessagePopup("Delete Backup", "Are you sure you want to delete this backup?", "Yes", () => { 
-                                File.Delete(backupFile); 
-                                UpdateBackupList(); 
+                        deleteButton.Click += (sender, e) => {
+                            ShowMessagePopup("Delete Backup", "Are you sure you want to delete this backup?", "Yes", () => {
+                                File.Delete(backupFile);
+                                UpdateBackupList();
                             }, "No");
                         };
 
                         new ToolTip().SetToolTip(deleteButton, "Delete backup " + backupFileName);
 
-                        restoreButton.Click += (sender, e) =>
-                        {
+                        restoreButton.Click += (sender, e) => {
                             ShowMessagePopup("Restore Backup", "Are you sure you want to restore this backup?", "Yes", () => {
-                                _ = PakManager.RestoreGamePak(backupFile); 
+                                _ = PakManager.RestoreGamePak(backupFile);
                                 UpdateBackupList();
                             }, "No");
                         };
@@ -228,7 +226,7 @@ namespace Archeage_Addon_Manager {
                     }
                 }
 
-                if(backupListPanel.Controls.Count <= 1) {
+                if (backupListPanel.Controls.Count <= 1) {
                     // Backup directory does not exist yet, just show a label saying no backups exist yet
                     Label noBackupsLabel = new Label() {
                         Width = backupListPanelWidth,
@@ -725,6 +723,10 @@ namespace Archeage_Addon_Manager {
 
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e) {
             CheckForUpdates();
+        }
+
+        private void customPanel1_Paint(object sender, PaintEventArgs e) {
+
         }
     }
 }

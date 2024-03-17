@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Archeage_Addon_Manager {
 
@@ -83,8 +85,8 @@ namespace Archeage_Addon_Manager {
         private bool thumbDragging = false;
         private int thumbDragOffset = 0;
 
-        private int scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight;
-        private int panelContentsHeight, thumbWidth, thumbHeight, thumbPos;
+        private int scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight = 0;
+        private int panelContentsHeight, thumbWidth, thumbHeight, thumbPos = 0;
 
         protected override CreateParams CreateParams {
             get {
@@ -111,7 +113,7 @@ namespace Archeage_Addon_Manager {
             scrollBgY = 0;
 
             thumbWidth = scrollBgWidth - (thumbMargin * 2);
-            thumbHeight = (int)((float)scrollBgHeight * ((float)scrollBgHeight / (float)panelContentsHeight));
+            thumbHeight = (int)(scrollBgHeight * (scrollBgHeight / (float)panelContentsHeight));
 
             // Temporarily enable autoscroll to force the contents to follow the scroll value
             AutoScroll = true;
@@ -132,12 +134,11 @@ namespace Archeage_Addon_Manager {
         }
 
         private void PerformScroll() {
-            thumbHeight = (int)((float)scrollBgHeight * ((float)scrollBgHeight / (float)panelContentsHeight));
-            thumbPos = (int)((float)scrollPosition * ((float)scrollBgHeight - (float)thumbHeight) / ((float)panelContentsHeight - (float)scrollBgHeight));
-
             // Calculate scroll percentage
-            float scrollPercentage = (float)scrollPosition / ((float)panelContentsHeight - (float)thumbHeight);
-            int scrollY = (int)(scrollPercentage * VerticalScroll.Maximum);
+            float scrollPercentage = scrollPosition / (panelContentsHeight - scrollBgHeight);
+            int scrollY = (int)(scrollPercentage * (panelContentsHeight - scrollBgHeight));
+
+            thumbPos = (int)(scrollPercentage * (scrollBgHeight - thumbHeight));
 
             // Clamp minimum value at 1 otherwise it doesn't bother updating the scroll when setting it to 0
             VerticalScroll.Value = Math.Max(scrollY, 1);
@@ -147,13 +148,15 @@ namespace Archeage_Addon_Manager {
         }
 
         protected override void OnPaint(PaintEventArgs e) {
-            if (panelContentsHeight > thumbHeight) {
+            base.OnPaint(e);
+
+            if (panelContentsHeight > thumbHeight && !DesignMode) {
                 // Draw the scrollbar background
                 using (var bgBrush = new SolidBrush(Color.FromArgb(255, 33, 35, 38)))
                     e.Graphics.FillRectangle(bgBrush, scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight);
 
                 // Draw the scrollbar thumb
-                using (var thumbBrush = new SolidBrush(Color.White))
+                using (var thumbBrush = new SolidBrush(thumbDragging ? Color.FromArgb(200, 200, 200) : Color.White))
                     e.Graphics.FillRectangle(thumbBrush, scrollBgX + thumbMargin, thumbPos + thumbMargin, thumbWidth, thumbHeight - (thumbMargin * 2));
             }
         }
@@ -184,6 +187,9 @@ namespace Archeage_Addon_Manager {
 
                     // Keep track of where the cursor is relative to the thumb bar
                     thumbDragOffset = e.Y - thumbBounds.Top;
+
+                    // Force a repaint (to recolour the scrollbar thumb)
+                    PerformScroll();
                 } else {
                     // Check if the user clicked somewhere else on the bar background
                     Rectangle scrollBgBounds = new Rectangle(scrollBgX, scrollBgY, scrollBgWidth, scrollBgHeight);
