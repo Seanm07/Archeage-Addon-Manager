@@ -76,8 +76,6 @@ namespace Archeage_Addon_Manager {
                 Width = horizontalGroup.Height - 10,
                 Height = horizontalGroup.Height - 10,
                 Margin = new Padding(5, 5, 0, 0),
-                //BackColor = Color.Red,
-                //Image = addonData.previewImage,
                 SizeMode = PictureBoxSizeMode.StretchImage
             };
 

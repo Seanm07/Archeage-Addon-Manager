@@ -23,8 +23,6 @@ namespace Archeage_Addon_Manager {
             // Use our custom renderer for the menu strip
             menuStrip1.Renderer = new ToolstripRenderer();
 
-            UpdateDeveloperButtonState();
-
             // Load addons from data sources
             AddonDataManager.instance.LoadAddonsFromDataSources();
 
@@ -61,7 +59,7 @@ namespace Archeage_Addon_Manager {
                 // Count how many files in backupDirectory have extension .game_pak_backup
                 int backupFileCount = Directory.GetFiles(backupDirectory, "*.game_pak_backup").Length;
 
-                if (backupFileCount > 5)
+                if (backupFileCount > 8)
                     backupListPanelWidth -= SystemInformation.VerticalScrollBarWidth;
 
                 Label backupTitleLabel = new Label() {
@@ -284,7 +282,7 @@ namespace Archeage_Addon_Manager {
             ShowMessagePopup("About ArcheAge Addon Manager", "Not endorsed by XLGames or Kakao Games!\nWe don't reflect views or opinion of anyone officially involved in Archeage.Kakao strongly doesn't recommend addon usage, you accept potential game breaking risks!\n\nArcheage Addon Manager program created by Nidoran\nBig thanks to Ingram for his AAPatcher work, additional thanks to Tamaki + Strawberry", "Close");
         }
 
-        private void DeveloperActionButtonClick(object sender, EventArgs e) {
+        private void DeveloperActionButtonClick(object? sender, EventArgs e) {
             if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
                     DeveloperManager.instance.UploadAddonButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
@@ -654,20 +652,33 @@ namespace Archeage_Addon_Manager {
         }
 
         public void UpdateDeveloperButtonState() {
+            developersToolStripMenuItem.DropDownItems.Clear(); // Clear existing items
+
             if (DeveloperManager.instance.isLoggedIn) {
                 if (DeveloperManager.instance.isDeveloper) {
-                    developerItemToolStripMenuItem.Text = "Upload Addon";
-                    developerItemToolStripMenuItem.Image = Image.FromFile("Resources/cloud_upload.png");
-                    developerItemToolStripMenuItem.Enabled = true;
+                    // Create and add Upload Addon item
+                    var uploadAddonItem = new ToolStripMenuItem("Upload Addon");
+                    uploadAddonItem.Image = Image.FromFile("Resources/cloud_upload.png");
+                    uploadAddonItem.Click += DeveloperActionButtonClick;
+                    developersToolStripMenuItem.DropDownItems.Add(uploadAddonItem);
                 } else {
-                    developerItemToolStripMenuItem.Text = "No Access!";
-                    developerItemToolStripMenuItem.Image = Image.FromFile("Resources/lock.png");
-                    developerItemToolStripMenuItem.Enabled = false;
+                    // Create and add No Access item
+                    var noAccessItem = new ToolStripMenuItem("No Access!");
+                    noAccessItem.Image = Image.FromFile("Resources/lock.png");
+                    noAccessItem.Click += DeveloperActionButtonClick;
+                    developersToolStripMenuItem.DropDownItems.Add(noAccessItem);
                 }
+
+                var logoutItem = new ToolStripMenuItem("Logout");
+                logoutItem.Image = Image.FromFile("Resources/destruction.png");
+                logoutItem.Click += (object? sender, EventArgs e) => DeveloperManager.instance.Logout(true);
+                developersToolStripMenuItem.DropDownItems.Add(logoutItem);
             } else {
-                developerItemToolStripMenuItem.Text = "Developer Login";
-                developerItemToolStripMenuItem.Image = Image.FromFile("Resources/lock.png");
-                developerItemToolStripMenuItem.Enabled = true;
+                // Create and add Developer Login item
+                var loginItem = new ToolStripMenuItem("Developer Login");
+                loginItem.Image = Image.FromFile("Resources/lock.png");
+                loginItem.Click += DeveloperActionButtonClick;
+                developersToolStripMenuItem.DropDownItems.Add(loginItem);
             }
         }
 

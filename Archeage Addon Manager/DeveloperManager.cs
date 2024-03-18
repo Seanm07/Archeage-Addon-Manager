@@ -29,6 +29,8 @@ namespace Archeage_Addon_Manager {
             } else {
                 Logout();
             }
+
+            MainWindow.instance.UpdateDeveloperButtonState();
         }
 
         public async void RefreshDiscordAccessToken() {
@@ -45,7 +47,7 @@ namespace Archeage_Addon_Manager {
             MainWindow.instance.UpdateDeveloperButtonState();
         }
 
-        public void Logout() {
+        public void Logout(bool userAction = false) {
             ProgramManager.WriteToConfigFile("discord_access_token", "");
             ProgramManager.WriteToConfigFile("discord_token_expiry", "");
             ProgramManager.WriteToConfigFile("discord_refresh_token", "");
@@ -54,6 +56,10 @@ namespace Archeage_Addon_Manager {
             isDeveloper = false;
 
             MainWindow.instance.UpdateDeveloperButtonState();
+
+            if (userAction) {
+                MainWindow.instance.ShowMessagePopup("Logged out!", "Your discord has been unlinked and you are now logged out.", "Ok");
+            }
         }
 
         private void ProcessDiscordOAuthResponse(string response) {

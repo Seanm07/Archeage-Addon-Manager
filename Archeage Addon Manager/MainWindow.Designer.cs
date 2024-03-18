@@ -37,7 +37,6 @@
             manageAddonSourcesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             developersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            developerItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             creditsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             windowDragPanel = new System.Windows.Forms.Panel();
@@ -130,7 +129,7 @@
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new System.Windows.Forms.Padding(5, 3, 0, 2);
             menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            menuStrip1.Size = new System.Drawing.Size(165, 24);
+            menuStrip1.Size = new System.Drawing.Size(285, 24);
             menuStrip1.TabIndex = 4;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -163,20 +162,11 @@
             // developersToolStripMenuItem
             // 
             developersToolStripMenuItem.BackColor = System.Drawing.Color.Transparent;
-            developersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { developerItemToolStripMenuItem });
             developersToolStripMenuItem.Font = new System.Drawing.Font("Ebrima", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             developersToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             developersToolStripMenuItem.Name = "developersToolStripMenuItem";
             developersToolStripMenuItem.Size = new System.Drawing.Size(77, 19);
             developersToolStripMenuItem.Text = "Developers";
-            // 
-            // developerItemToolStripMenuItem
-            // 
-            developerItemToolStripMenuItem.Image = Properties.Resources._lock;
-            developerItemToolStripMenuItem.Name = "developerItemToolStripMenuItem";
-            developerItemToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
-            developerItemToolStripMenuItem.Text = "Developer Login";
-            developerItemToolStripMenuItem.Click += DeveloperActionButtonClick;
             // 
             // helpToolStripMenuItem
             // 
@@ -323,7 +313,6 @@
         private System.Windows.Forms.ToolStripMenuItem creditsToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem developersToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem developerItemToolStripMenuItem;
         private System.Windows.Forms.Panel windowDragPanel;
         private System.Windows.Forms.Button closeWindowButton;
         private System.Windows.Forms.Button minimiseWindowButton;
