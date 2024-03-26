@@ -122,6 +122,72 @@ namespace Archeage_Addon_Manager {
             });
         }
 
+        public bool BuildAddon(string installationPath, string addonFolderPath, out AddonDataManager.AddonData addonInfo, out string jsonPath) {
+            AddonDataManager.instance.GetAddonSrcInfo(addonFolderPath, out addonInfo, out List<string> filePaths);
+
+            // TODO: Make a nicer looking form for the user to enter all the info at once while the addon packs in the background
+            addonInfo.name = Microsoft.VisualBasic.Interaction.InputBox("Enter a name for your addon", "Addon Name", Path.GetFileName(addonFolderPath));
+            addonInfo.description = Microsoft.VisualBasic.Interaction.InputBox("Enter a description for your addon", "Addon Description", "No description provided");
+            addonInfo.version = float.Parse(Microsoft.VisualBasic.Interaction.InputBox("Enter a version number for your addon", "Addon Version", "1.00"));
+            addonInfo.author = Environment.UserName;
+            addonInfo.packagedFileName = addonInfo.name.Replace(" ", "_").ToLower();
+
+            string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(addonInfo);
+
+            // Create a text file named addon.json at FileUtil.TempFilePath() + "addon.json" and write the jsonOutput to it
+            jsonPath = FileUtil.TempFilePath() + "addon.json";
+            File.WriteAllText(jsonPath, jsonOutput);
+
+            //MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
+
+            try {
+                if (!PakManager.GeneratePakFile(addonFolderPath, "mod"))
+                    throw new IOException("Failed to generate addon pak file!");
+
+                if (!PakManager.GenerateUninstallPakFile(installationPath + @"\game_pak", filePaths.ToArray(), "default"))
+                    throw new IOException("Failed to generate uninstall pak file!");
+
+                string[] addonFiles = [
+                    FileUtil.TempFilePath() + "addon.json",
+                    FileUtil.TempFilePath() + "mod.pak",
+                    FileUtil.TempFilePath() + "default.pak"
+                ];
+
+                // Move the addon files into a zip
+                if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
+                    throw new IOException("Failed to build addon zip file!");
+            } catch (IOException ex) {
+                MainWindow.instance.ShowMessagePopup("Failed to package addon!", ex.Message, "Retry", () => UploadAddonButtonClick(installationPath), "Cancel");
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool UnpackAddon(string outputFolder, string addonFilePath) {
+            try {
+                if(!PakManager.ExtractPakFile(outputFolder, addonFilePath))
+                    throw new IOException("Failed to extract addon pak file!");
+            } catch (IOException ex) {
+                MainWindow.instance.ShowMessagePopup("Failed to unpack addon!", ex.Message, "Retry", () => UnpackAddon(outputFolder, addonFilePath), "Cancel");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void CleanupTempFiles(string jsonPath, AddonDataManager.AddonData addonInfo) {
+            // Cleanup the json file
+            File.Delete(jsonPath);
+
+            // Cleanup the pak files
+            File.Delete(FileUtil.TempFilePath() + "mod.pak");
+            File.Delete(FileUtil.TempFilePath() + "default.pak");
+
+            // Cleanup the zip file
+            File.Delete(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
+        }
+
         public async void UploadAddonButtonClick(string installationPath) {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
                 Description = "Select root directory of addon source"
@@ -129,71 +195,114 @@ namespace Archeage_Addon_Manager {
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 string selectedFolder = folderBrowserDialog.SelectedPath;
-                AddonDataManager.instance.GetAddonSrcInfo(selectedFolder, out AddonDataManager.AddonData addonInfo, out List<string> filePaths);
 
-                // TODO: Make a nicer looking form for the user to enter all the info at once while the addon packs in the background
-                addonInfo.name = Microsoft.VisualBasic.Interaction.InputBox("Enter a name for your addon", "Addon Name", Path.GetFileName(selectedFolder));
-                addonInfo.description = Microsoft.VisualBasic.Interaction.InputBox("Enter a description for your addon", "Addon Description", "No description provided");
-                addonInfo.version = float.Parse(Microsoft.VisualBasic.Interaction.InputBox("Enter a version number for your addon", "Addon Version", "1.00"));
-                addonInfo.author = Environment.UserName;
-                addonInfo.packagedFileName = addonInfo.name.Replace(" ", "_").ToLower();
-
-                string jsonOutput = AddonDataManager.instance.CreateJsonForFolder(addonInfo);
-
-                // Create a text file named addon.json at FileUtil.TempFilePath() + "addon.json" and write the jsonOutput to it
-                string jsonPath = FileUtil.TempFilePath() + "addon.json";
-                File.WriteAllText(jsonPath, jsonOutput);
-
-                MessageBox.Show("These scripts were found in your addon!\nThey'll be extracted from your game_pak as a backup.\n\n" + string.Join("\n", filePaths));
-
-                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Generating " + addonInfo.packagedFileName + " pak");
+                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Building addon data");
                 await Task.Delay(1); // Wait a frame to allow the loading overlay to display before the pak generation begins
 
-                try {
-                    if (!PakManager.GeneratePakFile(selectedFolder, "mod"))
-                        throw new IOException("Failed to generate addon pak file!");
+                if (BuildAddon(installationPath, selectedFolder, out AddonDataManager.AddonData addonInfo, out string jsonPath)) {
+                    MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Uploading " + addonInfo.packagedFileName + " to cloud");
 
-                    if (!PakManager.GenerateUninstallPakFile(installationPath + @"\game_pak", filePaths.ToArray(), "default"))
-                        throw new IOException("Failed to generate uninstall pak file!");
-
-                    string[] addonFiles = [
-                        FileUtil.TempFilePath() + "addon.json",
-                        FileUtil.TempFilePath() + "mod.pak",
-                        FileUtil.TempFilePath() + "default.pak"
-                    ];
-
-                    // Move the addon files into a zip
-                    if (!FileUtil.CreateZipFile(addonFiles, FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip"))
-                        throw new IOException("Failed to build addon zip file!");
-                } catch (IOException ex) {
-                    MainWindow.instance.ShowMessagePopup("Failed to package addon!", ex.Message, "Retry", () => UploadAddonButtonClick(installationPath), "Cancel");
-                    return;
+                    WebRequest webRequest = new WebRequest();
+                    await webRequest.UploadZipFile(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
                 }
-
-                MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Uploading " + addonInfo.packagedFileName + " to cloud");
-
-                WebRequest webRequest = new WebRequest();
-                await webRequest.UploadZipFile(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
 
                 MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Cleaning up temporary files");
                 await Task.Delay(500); // half a second delay so the loading text is readable
 
-                // Cleanup the json file
-                File.Delete(jsonPath);
+                // Cleanup the temp files
+                CleanupTempFiles(jsonPath, addonInfo);
 
-                // Cleanup the pak files
-                File.Delete(FileUtil.TempFilePath() + "mod.pak");
-                File.Delete(FileUtil.TempFilePath() + "default.pak");
-
-                // Cleanup the zip file
-                File.Delete(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip");
-
+                // Reload addons
                 AddonDataManager.instance.ReloadAddonsFromDataSources();
 
                 MainWindow.instance.DisplayLoadingOverlay("Uploading addon..", "Done! " + addonInfo.packagedFileName + " has successfully been published.");
                 await Task.Delay(500); // half a second delay so the loading text is readable
 
                 MainWindow.instance.CloseLoadingOverlay();
+            }
+        }
+
+        public async void PackAddonButtonClick(string installationPath) {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
+                Description = "Select root directory of addon source (Parent folder of game/)"
+            };
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
+                string selectedFolder = folderBrowserDialog.SelectedPath;
+
+                // Make sure the child folder of selectedFolder is named "game"
+                if (!Directory.Exists(selectedFolder + "/game")) {
+                    // Show a message box error allowing the user to retry or cancel, retry will rerun this function
+                    MainWindow.instance.ShowMessagePopup("Invalid addon source!", "Your addon must match the game_pak folder structure! Your root folder must be named 'game'.", "Retry", () => PackAddonButtonClick(installationPath), "Cancel");
+                    return;
+                }
+
+                MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Building addon data");
+                await Task.Delay(1); // Wait a frame to allow the loading overlay to display before the pak generation begins
+
+                if (BuildAddon(installationPath, selectedFolder, out AddonDataManager.AddonData addonInfo, out string jsonPath)) {
+                    MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Moving " + addonInfo.packagedFileName + " to addon directory");
+
+                    File.Move(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip", Directory.GetParent(selectedFolder).FullName + "/" + addonInfo.packagedFileName + ".zip");
+                }
+
+                MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Cleaning up temporary files");
+                await Task.Delay(500); // half a second delay so the loading text is readable
+
+                // Cleanup the temp files
+                CleanupTempFiles(jsonPath, addonInfo);
+
+                MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Done! " + addonInfo.packagedFileName + " has successfully been built.");
+                await Task.Delay(500); // half a second delay so the loading text is readable
+
+                MainWindow.instance.CloseLoadingOverlay();
+            }
+        }
+
+        public async void UnpackAddonButtonClick(string installationPath) {
+            OpenFileDialog fileDialog = new OpenFileDialog() {
+                Title = "Select .pak or .zip containing mod.pak to unpack",
+                Filter = "Packaged Addon (*.pak;*.zip)|*.pak;*.zip",
+                Multiselect = false,
+                ValidateNames = true,
+                CheckFileExists = true
+            };
+
+            if (fileDialog.ShowDialog() == DialogResult.OK) {
+                string selectedFilePath = fileDialog.FileName;
+
+                FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
+                    Description = "Select root directory of addon source (Parent folder of game/)"
+                };
+
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
+                    MainWindow.instance.DisplayLoadingOverlay("Unpacking local addon..", "Building addon data");
+                    await Task.Delay(1); // Wait a frame to allow the loading overlay to display before the pak generation begins
+
+                    if(UnpackAddon(folderBrowserDialog.SelectedPath, selectedFilePath)) {
+                        MainWindow.instance.DisplayLoadingOverlay("Unpacking local addon..", "Successfully unpacked addon");
+                        await Task.Delay(500); // half a second delay so the loading text is readable
+
+                        MainWindow.instance.CloseLoadingOverlay();
+                    }
+
+                    /*if (BuildAddon(installationPath, selectedFolder, out AddonDataManager.AddonData addonInfo, out string jsonPath)) {
+                        MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Moving " + addonInfo.packagedFileName + " to addon directory");
+
+                        File.Move(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip", selectedFolder + addonInfo.packagedFileName + ".zip");
+                    }
+
+                    MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Cleaning up temporary files");
+                    await Task.Delay(500); // half a second delay so the loading text is readable
+
+                    // Cleanup the temp files
+                    CleanupTempFiles(jsonPath, addonInfo);
+
+                    MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Done! " + addonInfo.packagedFileName + " has successfully been built.");
+                    await Task.Delay(500); // half a second delay so the loading text is readable
+
+                    MainWindow.instance.CloseLoadingOverlay();*/
+                }
             }
         }
 

@@ -294,6 +294,14 @@ namespace Archeage_Addon_Manager {
             }
         }
 
+        private void PackAddonButtonClick(object? sender, EventArgs e) {
+            DeveloperManager.instance.PackAddonButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
+        }
+
+        private void UnpackAddonButtonClick(object? sender, EventArgs e) {
+            DeveloperManager.instance.UnpackAddonButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
+        }
+
         public void DisplayLoadingOverlay(string loadingText, string subLoadingText) {
             // Set the window to a loading state while the loading overlay is displayed
             this.Cursor = Cursors.WaitCursor;
@@ -654,27 +662,27 @@ namespace Archeage_Addon_Manager {
         public void UpdateDeveloperButtonState() {
             developersToolStripMenuItem.DropDownItems.Clear(); // Clear existing items
 
+            var unpackAddon = new ToolStripMenuItem("Unpack Local Addon");
+            unpackAddon.Image = Image.FromFile("Resources/update.png");
+            unpackAddon.Click += UnpackAddonButtonClick;
+            developersToolStripMenuItem.DropDownItems.Add(unpackAddon);
+
+            var packAddon = new ToolStripMenuItem("Pack Local Addon");
+            packAddon.Image = Image.FromFile("Resources/update.png");
+            packAddon.Click += PackAddonButtonClick;
+            developersToolStripMenuItem.DropDownItems.Add(packAddon);
+
             if (DeveloperManager.instance.isLoggedIn) {
-                if (DeveloperManager.instance.isDeveloper) {
-                    // Create and add Upload Addon item
-                    var uploadAddonItem = new ToolStripMenuItem("Upload Addon");
-                    uploadAddonItem.Image = Image.FromFile("Resources/cloud_upload.png");
-                    uploadAddonItem.Click += DeveloperActionButtonClick;
-                    developersToolStripMenuItem.DropDownItems.Add(uploadAddonItem);
-                } else {
-                    // Create and add No Access item
-                    var noAccessItem = new ToolStripMenuItem("No Access!");
-                    noAccessItem.Image = Image.FromFile("Resources/lock.png");
-                    noAccessItem.Click += DeveloperActionButtonClick;
-                    developersToolStripMenuItem.DropDownItems.Add(noAccessItem);
-                }
+                var uploadAddonItem = new ToolStripMenuItem("Upload Addon");
+                uploadAddonItem.Image = Image.FromFile("Resources/cloud_upload.png");
+                uploadAddonItem.Click += DeveloperActionButtonClick;
+                developersToolStripMenuItem.DropDownItems.Add(uploadAddonItem);
 
                 var logoutItem = new ToolStripMenuItem("Logout");
                 logoutItem.Image = Image.FromFile("Resources/destruction.png");
                 logoutItem.Click += (object? sender, EventArgs e) => DeveloperManager.instance.Logout(true);
                 developersToolStripMenuItem.DropDownItems.Add(logoutItem);
             } else {
-                // Create and add Developer Login item
                 var loginItem = new ToolStripMenuItem("Developer Login");
                 loginItem.Image = Image.FromFile("Resources/lock.png");
                 loginItem.Click += DeveloperActionButtonClick;

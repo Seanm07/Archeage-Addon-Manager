@@ -123,6 +123,58 @@ namespace Archeage_Addon_Manager {
             return pakGenerated;
         }
 
+        public static bool ExtractPakFile(string selectedFolder, string pakPath) {
+            bool pakExtracted = true;
+
+            // Get filename from pakPath and store it as pakFilename
+            string pakFilename = Path.GetFileName(pakPath);
+
+            // The generated pak will be created in the temp directory
+            string tempCreatedDir = FileUtil.TempFilePath() + "generated_pak_" + pakFilename;
+
+            // Delete the temporary directory if it already exists from a previous mod
+            FileUtil.DeleteDirectory(tempCreatedDir);
+
+            // Create the tempCreatedDir directory
+            Directory.CreateDirectory(tempCreatedDir);
+
+            try {
+                // Create the temporary file system
+                if (!XLPack.CreateFileSystem())
+                    throw new IOException("Failed to create temporary file system!");
+
+                // Mount the generated pak file into the /src directory of the temporary file system
+                if (XLPack.Mount("/src", pakPath, true) == IntPtr.Zero)
+                    throw new IOException("Failed to mount pak to temporary file system!");
+
+                // Mount the export directory into the /dst directory of the temporary file system
+                if (XLPack.Mount("/dst", tempCreatedDir + @"\", true) == IntPtr.Zero)
+                    throw new IOException("Failed to mount directory to temporary file system!");
+
+                // Copy the /src directory into the /dst directory within the temporary file system
+                if (!XLPack.CopyDir("/src", "/dst"))
+                    throw new IOException("Failed to copy pak into directory within temporary file system!");
+            } catch (IOException ex) {
+                pakExtracted = false;
+
+                MainWindow.instance.ShowMessagePopup("Failed to generate pak file!", ex.Message, "Retry", () => ExtractPakFile(selectedFolder, pakFilename), "Cancel");
+            }
+
+            // Rename all .alb files to .lua recursively
+            FileUtil.ChangeFileExtensions(tempCreatedDir, "alb", "lua");
+
+            // Copy the addon source directory to the temporary directory
+            FileUtil.CopyDirectory(tempCreatedDir, selectedFolder);
+
+            // Destroy the temporary file system regardless of success or failure
+            XLPack.DestroyFileSystem();
+
+            // Delete the temporary directory if it was created
+            FileUtil.DeleteDirectory(tempCreatedDir);
+
+            return pakExtracted;
+        }
+
         public static bool InstallPakFile(string gamePakPath, string pakPath) {
             bool pakInstalled = true;
 
@@ -240,6 +292,8 @@ namespace Archeage_Addon_Manager {
 
             for (int backupIndex = 1; File.Exists(backupPath); backupIndex++)
                 backupPath = installationPath + @"\game_pak_backups\" + versionNumber + "_" + backupIndex;
+
+            backupPath += ".game_pak_backup";
 
             using FileStream input = File.OpenRead(gamePakPath);
             using FileStream output = File.OpenWrite(backupPath);
