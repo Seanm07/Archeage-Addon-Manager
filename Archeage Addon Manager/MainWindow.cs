@@ -302,6 +302,10 @@ namespace Archeage_Addon_Manager {
             DeveloperManager.instance.UnpackAddonButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
         }
 
+        private void UnpackGamePakButtonClick(object? sender, EventArgs e) {
+            //DeveloperManager.instance.UnpackGamePakButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
+        }
+
         public void DisplayLoadingOverlay(string loadingText, string subLoadingText) {
             // Set the window to a loading state while the loading overlay is displayed
             this.Cursor = Cursors.WaitCursor;
@@ -661,6 +665,11 @@ namespace Archeage_Addon_Manager {
 
         public void UpdateDeveloperButtonState() {
             developersToolStripMenuItem.DropDownItems.Clear(); // Clear existing items
+
+            var unpackGamePak = new ToolStripMenuItem("Unpack Full Game Pak");
+            unpackGamePak.Image = Image.FromFile("Resources/update.png");
+            unpackGamePak.Click += UnpackGamePakButtonClick;
+            developersToolStripMenuItem.DropDownItems.Add(unpackGamePak);
 
             var unpackAddon = new ToolStripMenuItem("Unpack Local Addon");
             unpackAddon.Image = Image.FromFile("Resources/update.png");
