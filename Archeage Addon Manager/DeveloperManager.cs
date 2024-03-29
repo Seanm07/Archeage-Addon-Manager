@@ -285,23 +285,24 @@ namespace Archeage_Addon_Manager {
 
                         MainWindow.instance.CloseLoadingOverlay();
                     }
+                }
+            }
+        }
 
-                    /*if (BuildAddon(installationPath, selectedFolder, out AddonDataManager.AddonData addonInfo, out string jsonPath)) {
-                        MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Moving " + addonInfo.packagedFileName + " to addon directory");
+        public async void UnpackGamePakButtonClick(string installationPath) {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog() {
+                Description = "Select folder to unpack game pak to"
+            };
 
-                        File.Move(FileUtil.TempFilePath() + addonInfo.packagedFileName + ".zip", selectedFolder + addonInfo.packagedFileName + ".zip");
-                    }
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
+                MainWindow.instance.DisplayLoadingOverlay("Unpacking game pak..", "Unpacking");
+                await Task.Delay(1); // Wait a frame to allow the loading overlay to display before the pak generation begins
 
-                    MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Cleaning up temporary files");
+                if (UnpackAddon(folderBrowserDialog.SelectedPath, installationPath + "/game_pak")) {
+                    MainWindow.instance.DisplayLoadingOverlay("Unpacking game pak..", "Successfully unpacked");
                     await Task.Delay(500); // half a second delay so the loading text is readable
 
-                    // Cleanup the temp files
-                    CleanupTempFiles(jsonPath, addonInfo);
-
-                    MainWindow.instance.DisplayLoadingOverlay("Packing local addon..", "Done! " + addonInfo.packagedFileName + " has successfully been built.");
-                    await Task.Delay(500); // half a second delay so the loading text is readable
-
-                    MainWindow.instance.CloseLoadingOverlay();*/
+                    MainWindow.instance.CloseLoadingOverlay();
                 }
             }
         }

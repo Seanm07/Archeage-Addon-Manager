@@ -303,7 +303,7 @@ namespace Archeage_Addon_Manager {
         }
 
         private void UnpackGamePakButtonClick(object? sender, EventArgs e) {
-            //DeveloperManager.instance.UnpackGamePakButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
+            DeveloperManager.instance.UnpackGamePakButtonClick(AddonDataManager.instance.GetActiveInstallationPath());
         }
 
         public void DisplayLoadingOverlay(string loadingText, string subLoadingText) {
