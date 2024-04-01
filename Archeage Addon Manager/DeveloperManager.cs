@@ -25,6 +25,10 @@ namespace Archeage_Addon_Manager {
                     RefreshDiscordAccessToken();
                 } else {
                     isLoggedIn = true;
+                    isDeveloper = ProgramManager.ReadFromConfigFile("is_developer", "false") == "true";
+
+                    // Send a request to update the users developer status
+                    SendDeveloperCheckRequest();
                 }
             } else {
                 Logout();
@@ -51,6 +55,7 @@ namespace Archeage_Addon_Manager {
             ProgramManager.WriteToConfigFile("discord_access_token", "");
             ProgramManager.WriteToConfigFile("discord_token_expiry", "");
             ProgramManager.WriteToConfigFile("discord_refresh_token", "");
+            ProgramManager.WriteToConfigFile("is_developer", "false");
 
             isLoggedIn = false;
             isDeveloper = false;
@@ -63,6 +68,8 @@ namespace Archeage_Addon_Manager {
         }
 
         private void ProcessDiscordOAuthResponse(string response) {
+            Console.WriteLine(response);
+
             JObject jsonResponse = JObject.Parse(response);
 
             try {
@@ -95,6 +102,9 @@ namespace Archeage_Addon_Manager {
                 }
 
                 isLoggedIn = true;
+
+                // Send a request to check if the user is a developer
+                SendDeveloperCheckRequest();
             } catch (IOException e) {
                 MainWindow.instance.ShowMessagePopup("Failed to authenticate with Discord!", e.Message, "Retry", () => LoginButtonClick(), "Cancel");
 
@@ -107,6 +117,21 @@ namespace Archeage_Addon_Manager {
             WebRequest.ExternalOpenURL("https://discord.com/api/oauth2/authorize?client_id=1203510156529369178&response_type=code&redirect_uri=https%3A%2F%2Fwww.spacemeat.space%2Faamods%2Fapi%2Fauth.php&scope=guilds");
 
             MainWindow.instance.DisplayLoginOverlay();
+        }
+
+        private async void SendDeveloperCheckRequest() {
+            await new WebRequest().DoRequest("https://www.spacemeat.space/aamods/api/request.php?action=check_developer&access_token=" + ProgramManager.ReadFromConfigFile("discord_access_token", ""), (string response) => {
+                JObject jsonResponse = JObject.Parse(response);
+
+                if (jsonResponse.TryGetValue("is_developer", out JToken? isDeveloperToken) && isDeveloperToken != null) {
+                    isDeveloper = isDeveloperToken.ToString() == "1";
+                    ProgramManager.WriteToConfigFile("is_developer", isDeveloper ? "true" : "false");
+                } else {
+                    throw new IOException("Failed to check if user is a developer!");
+                }
+
+                MainWindow.instance.UpdateDeveloperButtonState();
+            });
         }
 
         public async void LoginLinkButtonConfirm(string discordLinkCode) {
